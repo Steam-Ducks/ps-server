@@ -1,6 +1,9 @@
 package pointsystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "emp_terceira", uniqueConstraints = @UniqueConstraint(columnNames = "empresa_ter_cnpj"))
@@ -18,6 +21,11 @@ public class Business {
 
     @Column(name = "empresa_ter_contato")
     private String contact;
+
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Role> roles;
+
 
     public Business() {}
 
@@ -58,5 +66,13 @@ public class Business {
 
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

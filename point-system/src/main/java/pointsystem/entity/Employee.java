@@ -26,19 +26,28 @@ public class Employee {
     @Temporal(TemporalType.DATE)
     private Date terminationDate;
 
+    @Column(name = "func_foto")
+    private String foto;
+
+    @ManyToOne
+    @JoinColumn(name = "empresa_ter_id", nullable = false)
+    private Business business;
+
     @ManyToOne
     @JoinColumn(name = "cargo_id", nullable = false)
     private Role role;
 
     public Employee() {}
 
-    public Employee(int id, String name, String cpf, String status, Date terminationDate, Role role) {
+    public Employee(int id, String name, String cpf, String status, Date terminationDate, Business business, Role role, String foto) {
         this.id = id;
         this.name = name;
         this.cpf = cpf;
         this.status = status;
         this.terminationDate = terminationDate;
+        this.business = business;
         this.role = role;
+        this.foto = foto;
     }
 
     public int getId() {
@@ -81,12 +90,28 @@ public class Employee {
         this.terminationDate = terminationDate;
     }
 
+    public Business getBusiness() {
+        return business;
+    }
+
+    public void setBusiness(Business business) {
+        this.business = business;
+    }
+
     public Role getRole() {
         return role;
     }
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
     }
 }
 
