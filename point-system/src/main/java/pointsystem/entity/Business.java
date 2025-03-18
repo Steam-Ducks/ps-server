@@ -23,9 +23,12 @@ public class Business {
     private String contact;
 
     @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonManagedReference("business-roles")
     private List<Role> roles;
 
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Employee> employees;
 
     public Business() {}
 
@@ -74,5 +77,13 @@ public class Business {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<Employee> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
     }
 }

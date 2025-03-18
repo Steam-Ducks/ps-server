@@ -22,7 +22,7 @@ public class Role {
 
     @ManyToOne
     @JoinColumn(name = "empresa_ter_id")
-    @JsonBackReference
+    @JsonBackReference("business-roles")
     private Business business;
 
 

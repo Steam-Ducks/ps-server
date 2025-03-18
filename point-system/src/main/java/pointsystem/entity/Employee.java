@@ -1,5 +1,6 @@
 package pointsystem.entity;
 
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -27,14 +28,17 @@ public class Employee {
     private Date terminationDate;
 
     @Column(name = "func_foto")
-    private String foto;
+    private String picture;
 
     @ManyToOne
     @JoinColumn(name = "empresa_ter_id", nullable = false)
+    @JsonIgnore
     private Business business;
 
     @ManyToOne
     @JoinColumn(name = "cargo_id", nullable = false)
+    //@JsonIgnoreProperties({"name", "salary"})
+    @JsonIgnore
     private Role role;
 
     public Employee() {}
@@ -47,7 +51,7 @@ public class Employee {
         this.terminationDate = terminationDate;
         this.business = business;
         this.role = role;
-        this.foto = foto;
+        this.picture = foto;
     }
 
     public int getId() {
@@ -106,12 +110,21 @@ public class Employee {
         this.role = role;
     }
 
-    public String getFoto() {
-        return foto;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setFoto(String foto) {
-        this.foto = foto;
+    public void setPicture(String foto) {
+        this.picture = foto;
     }
+
+    @JsonProperty("role")
+    public int getRoleId()
+    {
+        return role.getId();
+    }
+
+    @JsonProperty("business")
+    public int getBusinessId() { return  business.getBusinessId(); }
 }
 
