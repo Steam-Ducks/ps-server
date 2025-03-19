@@ -25,10 +25,10 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @PostMapping("/{BusinessId}/{roleId}")
-    public ResponseEntity<Integer> createEmployee(@PathVariable Integer BusinessId, @PathVariable Integer roleId, @RequestBody CreateEmployeeDto createEmployeeDto)
+    @PostMapping
+    public ResponseEntity<Integer> createEmployee(@RequestBody CreateEmployeeDto createEmployeeDto)
     {
-        int employeeId = employeeService.createEmployee(BusinessId, roleId, createEmployeeDto);
+        int employeeId = employeeService.createEmployee(createEmployeeDto);
         return ResponseEntity.created(URI.create("/api/employees/" + employeeId)).build();
     }
 

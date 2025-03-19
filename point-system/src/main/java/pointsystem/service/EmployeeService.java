@@ -5,12 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.dto.employee.CreateEmployeeDto;
-import pointsystem.entity.Business;
-import pointsystem.entity.Employee;
-import pointsystem.entity.Role;
-import pointsystem.repository.BusinessRepository;
+import pointsystem.entity.*;
+import pointsystem.repository.CompanyPositionEmployeeRepository;
+import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
-import pointsystem.repository.RoleRepository;
+import pointsystem.repository.PositionRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,26 +17,32 @@ import java.util.Optional;
 @Service
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
-    private final BusinessRepository businessRepository;
-    private final RoleRepository roleRepository;
+    private final CompanyRepository companyRepository;
+    private final PositionRepository positionRepository;
+    private final CompanyPositionEmployeeRepository companyPositionEmployeeRepository;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, BusinessRepository businessRepository, RoleRepository roleRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository, PositionRepository positionRepository, CompanyPositionEmployeeRepository companyPositionEmployeeRepository) {
         this.employeeRepository = employeeRepository;
-        this.businessRepository = businessRepository;
-        this.roleRepository = roleRepository;
+        this.companyRepository = companyRepository;
+        this.positionRepository = positionRepository;
+        this.companyPositionEmployeeRepository = companyPositionEmployeeRepository;
     }
 
-    public int createEmployee(Integer businessId, Integer roleId, CreateEmployeeDto createEmployeeDto) {
-        Business business = businessRepository.findById(businessId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+    public int createEmployee(CreateEmployeeDto createEmployeeDto) {
+        Company company = companyRepository.findById(createEmployeeDto.companyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
 
-        Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found"));
+        Position position = positionRepository.findById(createEmployeeDto.positionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Position not found"));
 
-        Employee employee = new Employee(0, createEmployeeDto.name(), createEmployeeDto.cpf(), "ativo", null, business, role, createEmployeeDto.picture());
-
+        Employee employee = new Employee(0, createEmployeeDto.name(), createEmployeeDto.cpf(), true, null, createEmployeeDto.photo());
         Employee savedEmployee = employeeRepository.save(employee);
+
+        CompanyPositionEmployeeId companyPositionEmployeeId = new CompanyPositionEmployeeId(company.getId(), position.getId(), savedEmployee.getId());
+        CompanyPositionEmployee pivotTable = new CompanyPositionEmployee(companyPositionEmployeeId, company, position, savedEmployee, createEmployeeDto.salary());
+
+        companyPositionEmployeeRepository.save(pivotTable);
         return savedEmployee.getId();
     }
 

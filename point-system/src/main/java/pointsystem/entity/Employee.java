@@ -1,57 +1,44 @@
 package pointsystem.entity;
 
-import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 
 import java.util.Date;
 
 @Entity
-@Table(name = "funcionario", uniqueConstraints = @UniqueConstraint(columnNames = "func_cpf"))
+@Table(name = "employees", uniqueConstraints = @UniqueConstraint(columnNames = "cpf"))
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "func_id")
+    @Column(name = "id")
     private int id;
 
-    @Column(name = "func_nome", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "func_cpf", nullable = false, unique = true)
+    @Column(name = "cpf", nullable = false, unique = true)
     private String cpf;
 
-    @Column(name = "func_status", nullable = false)
-    private String status;
+    @Column(name = "status", nullable = false)
+    private Boolean status;
 
-    @Column(name = "func_data_desligamento")
+    @Column(name = "termination_date")
     @Temporal(TemporalType.DATE)
     private Date terminationDate;
 
-    @Column(name = "func_foto")
-    private String picture;
+    @Column(name = "photo")
+    private String photo;
 
-    @ManyToOne
-    @JoinColumn(name = "empresa_ter_id", nullable = false)
-    @JsonIgnore
-    private Business business;
-
-    @ManyToOne
-    @JoinColumn(name = "cargo_id", nullable = false)
-    //@JsonIgnoreProperties({"name", "salary"})
-    @JsonIgnore
-    private Role role;
 
     public Employee() {}
 
-    public Employee(int id, String name, String cpf, String status, Date terminationDate, Business business, Role role, String foto) {
+    public Employee(int id, String name, String cpf, Boolean status, Date terminationDate, String photo) {
         this.id = id;
         this.name = name;
         this.cpf = cpf;
         this.status = status;
         this.terminationDate = terminationDate;
-        this.business = business;
-        this.role = role;
-        this.picture = foto;
+        this.photo = photo;
     }
 
     public int getId() {
@@ -78,11 +65,11 @@ public class Employee {
         this.cpf = cpf;
     }
 
-    public String getStatus() {
+    public Boolean getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 
@@ -94,37 +81,13 @@ public class Employee {
         this.terminationDate = terminationDate;
     }
 
-    public Business getBusiness() {
-        return business;
+    public String getPhoto() {
+        return photo;
     }
 
-    public void setBusiness(Business business) {
-        this.business = business;
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String foto) {
-        this.picture = foto;
-    }
-
-    @JsonProperty("role")
-    public int getRoleId()
-    {
-        return role.getId();
-    }
-
-    @JsonProperty("business")
-    public int getBusinessId() { return  business.getBusinessId(); }
 }
 
