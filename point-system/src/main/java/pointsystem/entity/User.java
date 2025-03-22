@@ -4,20 +4,20 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "usuario", uniqueConstraints = @UniqueConstraint(columnNames = "usuario_email"))
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "usuario_id")
+    @Column(name = "id")
     private int userId;
 
-    @Column(name = "usuario_nome")
+    @Column(name = "name")
     private String username;
 
-    @Column(name = "usuario_senha")
+    @Column(name = "password")
     private String password;
 
-    @Column(name = "usuario_email", unique = true)
+    @Column(name = "email", unique = true)
     private String email;
 
 
