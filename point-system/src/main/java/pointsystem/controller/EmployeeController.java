@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.dto.employee.CreateEmployeeDto;
+import pointsystem.dto.employee.UpdateEmployeeDto;
 import pointsystem.entity.Employee;
 import pointsystem.service.EmployeeService;
 
@@ -56,5 +57,17 @@ public class EmployeeController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
+    }
+
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<Void> updateEmployeeById(@PathVariable int employeeId, @RequestBody UpdateEmployeeDto updateEmployeeDto) {
+        employeeService.updateEmployeeById(employeeId, updateEmployeeDto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{employeeId}")
+    public ResponseEntity<Void> deleteEmployeeById(@PathVariable int employeeId) {
+        employeeService.deleteEmployeeById(employeeId);
+        return ResponseEntity.noContent().build();
     }
 }

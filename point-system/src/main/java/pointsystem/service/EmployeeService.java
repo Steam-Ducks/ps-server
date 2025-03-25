@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.dto.employee.CreateEmployeeDto;
+import pointsystem.dto.employee.UpdateEmployeeDto;
 import pointsystem.entity.*;
 import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.CompanyRepository;
@@ -52,5 +53,22 @@ public class EmployeeService {
 
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
+    }
+
+    public void updateEmployeeById(int employeeId, UpdateEmployeeDto updateEmployeeDto) {
+        Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
+        employeeEntity.ifPresent(employee -> {
+            if (updateEmployeeDto.name() != null) employee.setName(updateEmployeeDto.name());
+            if (updateEmployeeDto.cpf() != null) employee.setCpf(updateEmployeeDto.cpf());
+            if (updateEmployeeDto.status() != null) employee.setStatus(updateEmployeeDto.status());
+            if (updateEmployeeDto.photo() != null) employee.setPhoto(updateEmployeeDto.photo());
+            employeeRepository.save(employee);
+        });
+    }
+
+    public void deleteEmployeeById(int employeeId) {
+        if (employeeRepository.existsById(employeeId)) {
+            employeeRepository.deleteById(employeeId);
+        }
     }
 }
