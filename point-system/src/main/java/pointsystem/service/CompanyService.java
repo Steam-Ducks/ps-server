@@ -21,14 +21,20 @@ public class CompanyService {
     }
 
     public int createCompany(CreateCompanyDto createCompanyDto) {
+        if (companyRepository.existsByCnpj(createCompanyDto.cnpj())) {
+            throw new IllegalArgumentException("CNPJ já está em uso.");
+        }
+
         Company company = new Company(
                 0,
                 createCompanyDto.name(),
                 createCompanyDto.cnpj(),
                 createCompanyDto.contact()
         );
+
         return companyRepository.save(company).getId();
     }
+
 
     @Transactional
     public Optional<CompanyResponseDto> getCompanyById(int companyId) {
