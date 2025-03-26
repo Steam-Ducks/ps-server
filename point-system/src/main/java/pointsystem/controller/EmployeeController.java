@@ -1,14 +1,13 @@
 package pointsystem.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.dto.employee.CreateEmployeeDto;
+import pointsystem.dto.employee.EmployeeResponseDto;
 import pointsystem.dto.employee.UpdateEmployeeDto;
-import pointsystem.entity.Employee;
 import pointsystem.service.EmployeeService;
 
 import java.net.URI;
@@ -43,30 +42,23 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erro ao criar um novo funcionário. Tente novamente."));
         }
-
-
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable int employeeId) {
+    public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable int employeeId) {
         try {
-            Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
-            if (employee.isPresent()) {
-                return ResponseEntity.ok(employee.get());
-            }
-            else
-            {
-                return ResponseEntity.notFound().build();
-            }
+            Optional<EmployeeResponseDto> employee = employeeService.getEmployeeById(employeeId);
+            return employee.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
         try {
-            List<Employee> employees = employeeService.getAllEmployees();
+            List<EmployeeResponseDto> employees = employeeService.getAllEmployees();
             return ResponseEntity.ok(employees);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);

@@ -1,5 +1,6 @@
 package pointsystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -24,7 +25,7 @@ public class Company {
     private String contact;
 
     @OneToMany(mappedBy = "company")
-    @JsonManagedReference
+    @JsonIgnore
     private List<CompanyPositionEmployee> employees ;
 
     public Company() {}

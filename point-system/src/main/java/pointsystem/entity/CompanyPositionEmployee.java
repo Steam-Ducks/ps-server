@@ -10,20 +10,20 @@ public class CompanyPositionEmployee {
     @EmbeddedId
     private CompanyPositionEmployeeId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("companyId")
     @JoinColumn(name = "company_id")
     @JsonBackReference
     private Company company;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("positionId")
     @JoinColumn(name = "position_id")
     private Position position;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("employeeId")
     @JoinColumn(name = "employee_id")
     private Employee employee;
