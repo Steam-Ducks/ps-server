@@ -31,11 +31,15 @@ public class EmployeeService {
     }
 
     public int createEmployee(CreateEmployeeDto createEmployeeDto) {
+
+        if (employeeRepository.existsByCpf(createEmployeeDto.cpf())) {
+            throw new IllegalArgumentException("CPF já cadastrado");
+        }
         Company company = companyRepository.findById(createEmployeeDto.companyId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 
         Position position = positionRepository.findById(createEmployeeDto.positionId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Position not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cargo não encontrado"));
 
         Employee employee = new Employee(0, createEmployeeDto.name(), createEmployeeDto.cpf(), true, null, createEmployeeDto.photo());
         Employee savedEmployee = employeeRepository.save(employee);

@@ -13,6 +13,7 @@ import pointsystem.service.EmployeeService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -27,10 +28,23 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<Integer> createEmployee(@RequestBody CreateEmployeeDto createEmployeeDto)
+    public ResponseEntity<?> createEmployee(@RequestBody CreateEmployeeDto createEmployeeDto)
     {
-        int employeeId = employeeService.createEmployee(createEmployeeDto);
-        return ResponseEntity.created(URI.create("/api/employees/" + employeeId)).build();
+        try {
+            int employeeId = employeeService.createEmployee(createEmployeeDto);
+            return ResponseEntity.created(URI.create("/api/employees/" + employeeId)).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro ao criar um novo funcionário. Tente novamente."));
+        }
+
+
     }
 
     @GetMapping("/{employeeId}")
