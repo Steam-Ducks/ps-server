@@ -33,6 +33,11 @@ public class EmployeeService {
     }
 
     public int createEmployee(CreateEmployeeDto createEmployeeDto) {
+
+        if (!isValidCPF(createEmployeeDto.cpf())) {
+            throw new IllegalArgumentException("CPF inválido.");
+        }
+
         if (employeeRepository.existsByCpf(createEmployeeDto.cpf())) {
             throw new IllegalArgumentException("CPF já cadastrado");
         }
@@ -87,4 +92,11 @@ public class EmployeeService {
             employeeRepository.deleteById(employeeId);
         }
     }
+
+
+
+    private boolean isValidCPF(String cpf) {
+        return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
+    }
+
 }
