@@ -27,8 +27,13 @@ public class CompanyController {
     @PostMapping
     public ResponseEntity<?> createCompany(@RequestBody CreateCompanyDto createCompanyDto) {
         try {
+            if (!isValidCNPJ(createCompanyDto.cnpj())) {
+                throw new IllegalArgumentException("CNPJ/CPF inválido.");
+            }
+
             int companyId = companyService.createCompany(createCompanyDto);
-            return ResponseEntity.created(URI.create("/api/companies/" + companyId)).build();
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("id", companyId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));
@@ -62,4 +67,10 @@ public class CompanyController {
         companyService.deleteCompanyById(companyId);
         return ResponseEntity.noContent().build();
     }
+
+
+    private boolean isValidCNPJ(String cnpj) {
+        return cnpj != null && (cnpj.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}") || cnpj.matches("\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2}"));
+    }
+
 }
