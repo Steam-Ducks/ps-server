@@ -8,6 +8,7 @@ import pointsystem.dto.company.UpdateCompanyDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +43,9 @@ public class CompanyService {
     }
 
     public List<CompanyResponseDto> getAllCompanies() {
-        return companyRepository.findAll().stream().map(CompanyResponseDto::new).toList();
+        return companyRepository.findAll().stream()
+                .sorted(Comparator.comparing(Company::getName))
+                .map(CompanyResponseDto::new).toList();
     }
 
     public void updateCompanyById(int companyId, UpdateCompanyDto updateCompanyDto) {
