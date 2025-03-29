@@ -31,7 +31,8 @@ public class EmployeeController {
     {
         try {
             int employeeId = employeeService.createEmployee(createEmployeeDto);
-            return ResponseEntity.created(URI.create("/api/employees/" + employeeId)).build();
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("id", employeeId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));

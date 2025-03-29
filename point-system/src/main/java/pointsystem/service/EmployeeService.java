@@ -13,6 +13,7 @@ import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
 import pointsystem.repository.PositionRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,6 +34,11 @@ public class EmployeeService {
     }
 
     public int createEmployee(CreateEmployeeDto createEmployeeDto) {
+
+        if (!isValidCPF(createEmployeeDto.cpf())) {
+            throw new IllegalArgumentException("CPF inválido.");
+        }
+
         if (employeeRepository.existsByCpf(createEmployeeDto.cpf())) {
             throw new IllegalArgumentException("CPF já cadastrado");
         }
@@ -64,6 +70,7 @@ public class EmployeeService {
         List<Employee> employees = employeeRepository.findAll();
 
         return employees.stream()
+                .sorted(Comparator.comparing(Employee::getName))
                 .map(employee -> {
                     Optional<CompanyPositionEmployee> companyPosition = companyPositionEmployeeRepository.findByEmployeeId(employee.getId());
                     return new EmployeeResponseDto(employee, companyPosition.orElse(null));
@@ -87,4 +94,11 @@ public class EmployeeService {
             employeeRepository.deleteById(employeeId);
         }
     }
+
+
+
+    private boolean isValidCPF(String cpf) {
+        return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
+    }
+
 }
