@@ -3,6 +3,7 @@ package pointsystem.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.dto.employee.CreateEmployeeDto;
 import pointsystem.dto.employee.EmployeeResponseDto;
@@ -59,6 +60,7 @@ public class EmployeeService {
         return savedEmployee.getId();
     }
 
+
     public Optional<EmployeeResponseDto> getEmployeeById(int employeeId) {
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         Optional<CompanyPositionEmployee> companyPosition = companyPositionEmployeeRepository.findByEmployeeId(employeeId);
@@ -100,5 +102,6 @@ public class EmployeeService {
     private boolean isValidCPF(String cpf) {
         return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
     }
+
 
 }
