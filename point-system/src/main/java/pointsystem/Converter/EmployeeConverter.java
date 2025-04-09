@@ -11,6 +11,7 @@ import pointsystem.entity.CompanyPositionEmployee;
 import pointsystem.entity.Employee;
 import pointsystem.repository.CompanyPositionEmployeeRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,6 +63,10 @@ public class EmployeeConverter implements Converter<Employee, EmployeeDto> {
         employeeMapper.setProvider(employeeProvider);
 
         Employee employee = modelMapper.map(dto, Employee.class);
+
+        if (dto.getStartDate() == null) {
+            employee.setStartDate(LocalDate.now());
+        }
 
         if (dto.getCompany() != null || dto.getPosition() != null || dto.getSalary() != null) {
             CompanyPositionEmployee companyPosition = new CompanyPositionEmployee();
