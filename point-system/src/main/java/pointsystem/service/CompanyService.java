@@ -2,6 +2,7 @@ package pointsystem.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import pointsystem.dto.company.CompanyMapper;
 import pointsystem.dto.company.CompanyResponseDto;
 import pointsystem.dto.company.CreateCompanyDto;
 import pointsystem.dto.company.UpdateCompanyDto;
@@ -26,34 +27,26 @@ public class CompanyService {
             throw new IllegalArgumentException("CNPJ já está em uso.");
         }
 
-        Company company = new Company(
-                0,
-                createCompanyDto.name(),
-                createCompanyDto.cnpj(),
-                createCompanyDto.contact()
-        );
-
+        Company company = CompanyMapper.toEntity(createCompanyDto);
         return companyRepository.save(company).getId();
     }
 
-
     @Transactional
     public Optional<CompanyResponseDto> getCompanyById(int companyId) {
-        return companyRepository.findById(companyId).map(CompanyResponseDto::new);
+        return companyRepository.findById(companyId).map(CompanyMapper::toResponseDto);
     }
 
     public List<CompanyResponseDto> getAllCompanies() {
         return companyRepository.findAll().stream()
                 .sorted(Comparator.comparing(Company::getName))
-                .map(CompanyResponseDto::new).toList();
+                .map(CompanyMapper::toResponseDto)
+                .toList();
     }
 
     public void updateCompanyById(int companyId, UpdateCompanyDto updateCompanyDto) {
         Optional<Company> companyEntity = companyRepository.findById(companyId);
         companyEntity.ifPresent(company -> {
-            if (updateCompanyDto.name() != null) company.setName(updateCompanyDto.name());
-            if (updateCompanyDto.cnpj() != null) company.setCnpj(updateCompanyDto.cnpj());
-            if (updateCompanyDto.contact() != null) company.setContact(updateCompanyDto.contact());
+            CompanyMapper.updateEntityFromDto(updateCompanyDto, company);
             companyRepository.save(company);
         });
     }
