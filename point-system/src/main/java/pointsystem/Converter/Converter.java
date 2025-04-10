@@ -1,4 +1,4 @@
-package pointsystem.Converter;
+package pointsystem.converter;
 
 import java.util.List;
 

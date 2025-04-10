@@ -1,4 +1,4 @@
-package pointsystem.Converter;
+package pointsystem.converter;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.Provider;

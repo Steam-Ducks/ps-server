@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.Converter.EmployeeConverter;
+import pointsystem.converter.EmployeeConverter;
 import pointsystem.dto.employee.EmployeeDto;
 import pointsystem.entity.*;
 import pointsystem.repository.CompanyPositionEmployeeRepository;
