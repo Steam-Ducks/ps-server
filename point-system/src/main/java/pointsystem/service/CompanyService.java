@@ -2,9 +2,8 @@ package pointsystem.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import pointsystem.dto.company.CompanyResponseDto;
-import pointsystem.dto.company.CreateCompanyDto;
-import pointsystem.dto.company.UpdateCompanyDto;
+import pointsystem.converter.CompanyConverter;
+import pointsystem.dto.company.CompanyDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
 
@@ -16,45 +15,40 @@ import java.util.Optional;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final CompanyConverter companyConverter;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    public CompanyService(CompanyRepository companyRepository, CompanyConverter companyConverter) {
         this.companyRepository = companyRepository;
+        this.companyConverter = companyConverter;
     }
 
-    public int createCompany(CreateCompanyDto createCompanyDto) {
-        if (companyRepository.existsByCnpj(createCompanyDto.cnpj())) {
+    public int createCompany(CompanyDto companyDto) {
+        if (companyRepository.existsByCnpj(companyDto.getCnpj())) {
             throw new IllegalArgumentException("CNPJ já está em uso.");
         }
 
-        Company company = new Company(
-                0,
-                createCompanyDto.name(),
-                createCompanyDto.cnpj(),
-                createCompanyDto.contact()
-        );
-
+        Company company = companyConverter.toEntity(companyDto);
         return companyRepository.save(company).getId();
     }
 
-
     @Transactional
-    public Optional<CompanyResponseDto> getCompanyById(int companyId) {
-        return companyRepository.findById(companyId).map(CompanyResponseDto::new);
+    public Optional<CompanyDto> getCompanyById(int companyId) {
+        return companyRepository.findById(companyId).map(companyConverter::toDto);
     }
 
-    public List<CompanyResponseDto> getAllCompanies() {
+    public List<CompanyDto> getAllCompanies() {
         return companyRepository.findAll().stream()
                 .sorted(Comparator.comparing(Company::getName))
-                .map(CompanyResponseDto::new).toList();
+                .map(companyConverter::toDto)
+                .toList();
     }
 
-    public void updateCompanyById(int companyId, UpdateCompanyDto updateCompanyDto) {
+    public void updateCompanyById(int companyId, CompanyDto companyDto) {
         Optional<Company> companyEntity = companyRepository.findById(companyId);
         companyEntity.ifPresent(company -> {
-            if (updateCompanyDto.name() != null) company.setName(updateCompanyDto.name());
-            if (updateCompanyDto.cnpj() != null) company.setCnpj(updateCompanyDto.cnpj());
-            if (updateCompanyDto.contact() != null) company.setContact(updateCompanyDto.contact());
-            companyRepository.save(company);
+            Company updatedCompany = companyConverter.toEntity(companyDto);
+            updatedCompany.setId(companyId);
+            companyRepository.save(updatedCompany);
         });
     }
 
