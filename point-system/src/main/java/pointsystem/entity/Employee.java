@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Setter
@@ -37,5 +38,7 @@ public class Employee {
     @Column(name = "photo")
     private String photo;
 
+    @Column(name = "start_date")
+    private LocalDate startDate = LocalDate.now();
 }
 
