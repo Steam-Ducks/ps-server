@@ -1,15 +1,11 @@
 package pointsystem.controller;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pointsystem.dto.company.CompanyResponseDto;
-import pointsystem.dto.company.CreateCompanyDto;
-import pointsystem.dto.company.UpdateCompanyDto;
+import pointsystem.dto.company.CompanyDto;
 import pointsystem.service.CompanyService;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -25,13 +21,13 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createCompany(@RequestBody CreateCompanyDto createCompanyDto) {
+    public ResponseEntity<?> createCompany(@RequestBody CompanyDto companyDto) {
         try {
-            if (!isValidCNPJ(createCompanyDto.cnpj())) {
+            if (!isValidCNPJ(companyDto.getCnpj())) {
                 throw new IllegalArgumentException("CNPJ/CPF inválido.");
             }
 
-            int companyId = companyService.createCompany(createCompanyDto);
+            int companyId = companyService.createCompany(companyDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("id", companyId));
         } catch (IllegalArgumentException e) {
@@ -43,22 +39,21 @@ public class CompanyController {
         }
     }
 
-
     @GetMapping("/{companyId}")
-    public ResponseEntity<CompanyResponseDto> getCompanyById(@PathVariable int companyId) {
+    public ResponseEntity<CompanyDto> getCompanyById(@PathVariable int companyId) {
         return companyService.getCompanyById(companyId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<CompanyResponseDto>> getAllCompanies() {
+    public ResponseEntity<List<CompanyDto>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
     @PutMapping("/{companyId}")
-    public ResponseEntity<Void> updateCompanyById(@PathVariable int companyId, @RequestBody UpdateCompanyDto updateCompanyDto) {
-        companyService.updateCompanyById(companyId, updateCompanyDto);
+    public ResponseEntity<Void> updateCompanyById(@PathVariable int companyId, @RequestBody CompanyDto companyDto) {
+        companyService.updateCompanyById(companyId, companyDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -68,9 +63,7 @@ public class CompanyController {
         return ResponseEntity.noContent().build();
     }
 
-
     private boolean isValidCNPJ(String cnpj) {
         return cnpj != null && (cnpj.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}") || cnpj.matches("\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2}"));
     }
-
 }

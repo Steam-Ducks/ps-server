@@ -2,13 +2,14 @@ package pointsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pointsystem.dto.user.CreateUserDto;
-import pointsystem.dto.user.UpdateUserDto;
+import pointsystem.converter.UserConverter;
+import pointsystem.dto.user.UserDto;
 import pointsystem.entity.User;
 import pointsystem.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -20,47 +21,42 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public int createUser(CreateUserDto userDto) {
-        User user = new User();
-        user.setUsername(userDto.username());
-        user.setPassword(userDto.password());
-        user.setEmail(userDto.email());
+    public int createUser(UserDto userDto) {
+        User user = UserConverter.toEntity(userDto);
 
         if (!user.isEmailvalidador()) {
-            throw new IllegalArgumentException("O e-mail deve conter ou terminar com '@altave'");
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
 
-        return userRepository.save(user).getUserId();
+        User userSaved = userRepository.save(user);
+        return userSaved.getUserId();
     }
 
-    public Optional<User> getUserById(int userId) {
-        return userRepository.findById(userId);
+    public Optional<UserDto> getUserById(int userId) {
+        return userRepository.findById(userId)
+                .map(UserConverter::toDto);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserConverter::toDto)
+                .collect(Collectors.toList());
     }
 
-    public void updateUserById(int userId, UpdateUserDto updateUserDto) {
+    public void updateUserById(int userId, UserDto userDto) {
         Optional<User> userEntity = userRepository.findById(userId);
 
         if (userEntity.isPresent()) {
             User user = userEntity.get();
-            if (updateUserDto.username() != null) {
-                user.setUsername(updateUserDto.username());
-            }
-
-            if (updateUserDto.password() != null) {
-                user.setPassword(updateUserDto.password());
-            }
-            userRepository.save(user);
+            User updatedUser = UserConverter.updateEntity(user, userDto);
+            userRepository.save(updatedUser);
         }
     }
 
-    public void deleteUserById(int userID) {
-        boolean exists = userRepository.existsById(userID);
-        if (exists) {
-            userRepository.deleteById(userID);
+    public void deleteUserById(int userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
         }
     }
 }

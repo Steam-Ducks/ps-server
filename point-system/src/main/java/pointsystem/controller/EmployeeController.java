@@ -4,13 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.dto.employee.CreateEmployeeDto;
-import pointsystem.dto.employee.EmployeeResponseDto;
-import pointsystem.dto.employee.UpdateEmployeeDto;
+import pointsystem.dto.employee.EmployeeDto;
 import pointsystem.service.EmployeeService;
+import pointsystem.service.SupabaseStorageService;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,16 +20,17 @@ import java.util.Optional;
 public class EmployeeController {
     @Autowired
     private final EmployeeService employeeService;
+    private final SupabaseStorageService supabaseStorageService;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, SupabaseStorageService supabaseStorageService) {
         this.employeeService = employeeService;
+        this.supabaseStorageService = supabaseStorageService;
     }
 
     @PostMapping
-    public ResponseEntity<?> createEmployee(@RequestBody CreateEmployeeDto createEmployeeDto)
-    {
+    public ResponseEntity<?> createEmployee(@RequestBody EmployeeDto employeeDto) {
         try {
-            int employeeId = employeeService.createEmployee(createEmployeeDto);
+            int employeeId = employeeService.createEmployee(employeeDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("id", employeeId));
         } catch (IllegalArgumentException e) {
@@ -45,10 +45,20 @@ public class EmployeeController {
         }
     }
 
-    @GetMapping("/{employeeId}")
-    public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable int employeeId) {
+    @PostMapping("/uploadPhoto")
+    public ResponseEntity<?> uploadEmployeePhoto(@RequestParam("file") MultipartFile file) {
         try {
-            Optional<EmployeeResponseDto> employee = employeeService.getEmployeeById(employeeId);
+            String photoUrl = supabaseStorageService.uploadEmployeePhoto(file);
+            return ResponseEntity.ok(Map.of("photoUrl", photoUrl));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Erro no upload de foto"));
+        }
+    }
+
+    @GetMapping("/{employeeId}")
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable int employeeId) {
+        try {
+            Optional<EmployeeDto> employee = employeeService.getEmployeeById(employeeId);
             return employee.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -57,9 +67,9 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeDto>> getAllEmployees() {
         try {
-            List<EmployeeResponseDto> employees = employeeService.getAllEmployees();
+            List<EmployeeDto> employees = employeeService.getAllEmployees();
             return ResponseEntity.ok(employees);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
@@ -67,8 +77,8 @@ public class EmployeeController {
     }
 
     @PutMapping("/{employeeId}")
-    public ResponseEntity<Void> updateEmployeeById(@PathVariable int employeeId, @RequestBody UpdateEmployeeDto updateEmployeeDto) {
-        employeeService.updateEmployeeById(employeeId, updateEmployeeDto);
+    public ResponseEntity<Void> updateEmployeeById(@PathVariable int employeeId, @RequestBody EmployeeDto employeeDto) {
+        employeeService.updateEmployeeById(employeeId, employeeDto);
         return ResponseEntity.noContent().build();
     }
 
