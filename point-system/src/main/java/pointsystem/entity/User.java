@@ -2,10 +2,10 @@ package pointsystem.entity;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -20,8 +20,6 @@ public class User {
     @Column(name = "email", unique = true)
     private String email;
 
-
-
     public User() {}
 
     public User(int userId, String username, String password, String email) {
@@ -31,6 +29,7 @@ public class User {
         this.email = email;
     }
 
+    // Getters e Setters
     public int getUserId() {
         return userId;
     }
@@ -61,5 +60,9 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isEmailvalidador() {
+        return email != null && email.toLowerCase().endsWith("@altave.com");
     }
 }

@@ -1,6 +1,5 @@
 package pointsystem.service;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pointsystem.dto.user.CreateUserDto;
@@ -14,23 +13,24 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    @Autowired
     private final UserRepository userRepository;
 
+    @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public int createUser(CreateUserDto createUserDto) {
-        User user = new User(
-                0,
-                createUserDto.username(),
-                createUserDto.password(),
-                createUserDto.email()
-        );
+    public int createUser(CreateUserDto userDto) {
+        User user = new User();
+        user.setUsername(userDto.username());
+        user.setPassword(userDto.password());
+        user.setEmail(userDto.email());
 
-        User userSaved = userRepository.save(user);
-        return userSaved.getUserId();
+        if (!user.isEmailvalidador()) {
+            throw new IllegalArgumentException("O e-mail deve conter ou terminar com '@altave'");
+        }
+
+        return userRepository.save(user).getUserId();
     }
 
     public Optional<User> getUserById(int userId) {
@@ -46,16 +46,15 @@ public class UserService {
 
         if (userEntity.isPresent()) {
             User user = userEntity.get();
-            if(updateUserDto.username() != null) {
+            if (updateUserDto.username() != null) {
                 user.setUsername(updateUserDto.username());
             }
 
-            if(updateUserDto.password() != null) {
+            if (updateUserDto.password() != null) {
                 user.setPassword(updateUserDto.password());
             }
             userRepository.save(user);
         }
-
     }
 
     public void deleteUserById(int userID) {

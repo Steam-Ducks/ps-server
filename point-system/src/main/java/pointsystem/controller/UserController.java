@@ -12,6 +12,7 @@ import pointsystem.service.UserService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -27,9 +28,20 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody CreateUserDto user) {
-        int newUserId = userService.createUser(user);
-        return ResponseEntity.created(URI.create("/api/users/" + newUserId)).build();
+    public ResponseEntity<?> createUser(@RequestBody CreateUserDto userDto) {
+        try {
+            int newUserId = userService.createUser(userDto);
+            Optional<User> createdUser = userService.getUserById(newUserId);
+
+            return createdUser
+                    .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Erro ao cadastrar o Usuario. tente novamente"));
+        }
     }
 
     @GetMapping("/{userId}")
