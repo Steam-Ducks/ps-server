@@ -14,8 +14,8 @@ public class UserConverter {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .password(null) // Avoid exposing the password
-                .isAdmin(user.getIsAdmin())
-                .isInactive(user.getIsInactive())
+                .is_admin(user.getIsAdmin())
+                .isActive(user.getIsActive())
                 .build();
     }
 
@@ -28,8 +28,8 @@ public class UserConverter {
                 .username(userDto.getUsername())
                 .email(userDto.getEmail())
                 .password(userDto.getPassword())
-                .isAdmin(userDto.getIsAdmin())
-                .isInactive(userDto.getIsInactive())
+                .isAdmin(userDto.getIs_admin())
+                .isActive(userDto.getIsActive())
                 .build();
     }
 
@@ -40,8 +40,8 @@ public class UserConverter {
         if (userDto.getPassword() != null) {
             user.setPassword(userDto.getPassword());
         }
-        user.setIsAdmin(userDto.getIsAdmin());
-        user.setIsInactive(userDto.getIsInactive());
+        user.setIsAdmin(userDto.getIs_admin());
+        user.setIsActive(userDto.getIsActive());
         return user;
     }
 }

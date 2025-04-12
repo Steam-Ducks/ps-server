@@ -26,8 +26,8 @@ public class User {
     private String email;
 
     @Column(name = "is_admin", nullable = false)
-    private Boolean isAdmin = false;
+    private Boolean isAdmin;
 
-    @Column(name = "is_inactive", nullable = false)
-    private Boolean isInactive = false;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 }

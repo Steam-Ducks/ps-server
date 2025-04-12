@@ -14,6 +14,6 @@ public class UserDto {
     private String username;
     private String email;
     private String password; // Optional for updates, required for creation
-    private Boolean isAdmin = false;
-    private Boolean isInactive = false;
+    private Boolean is_admin ;
+    private Boolean isActive = true;
 }
