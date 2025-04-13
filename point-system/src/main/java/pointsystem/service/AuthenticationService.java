@@ -1,6 +1,7 @@
 package pointsystem.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,18 +33,27 @@ public class AuthenticationService {
         UserEntity userEntitySaved = userRepository.save(userEntity);
 
         String token = jwtUtil.generateToken(userEntitySaved.getEmail(), userEntitySaved.getIsAdmin());
-        return new AuthenticationResponseDto(token);
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
     }
 
-    public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+    public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) throws BadRequestException {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (Exception e) {
+            boolean userExists = userRepository.findByEmail(request.getEmail()).isPresent();
+            if (userExists) {
+                throw new BadRequestException("Senha incorreta");
+            } else {
+                throw new BadRequestException("Usuário não encontrado");
+            }
+        }
 
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
 
         String token = jwtUtil.generateToken(userEntity.getEmail(), userEntity.getIsAdmin());
-        return new AuthenticationResponseDto(token);
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
     }
 }

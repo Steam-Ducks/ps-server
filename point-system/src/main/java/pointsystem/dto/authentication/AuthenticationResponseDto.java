@@ -7,4 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthenticationResponseDto {
     private String accessToken;
+    private Boolean isAdmin;
 }
