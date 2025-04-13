@@ -1,6 +1,7 @@
 package pointsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pointsystem.converter.UserConverter;
 import pointsystem.dto.user.UserDto;
@@ -16,16 +17,19 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserConverter userConverter;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserConverter userConverter) {
+    public UserService(UserRepository userRepository, UserConverter userConverter, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userConverter = userConverter;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public int createUser(UserDto userDto) {
         User user = userConverter.toEntity(userDto);
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (!user.isEmailvalidador()) {
             throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
