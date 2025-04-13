@@ -29,7 +29,7 @@ public class UserController {
     public ResponseEntity<?> createUser(@RequestBody UserDto userDto) {
         try {
             int newUserId = userService.createUser(userDto);
-            return ResponseEntity.created(URI.create("/api/users/" + newUserId)).build();
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", newUserId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
