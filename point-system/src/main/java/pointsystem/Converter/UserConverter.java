@@ -1,47 +1,36 @@
 package pointsystem.converter;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import pointsystem.dto.user.UserDto;
 import pointsystem.entity.User;
 
+@Component
 public class UserConverter {
 
-    public static UserDto toDto(User user) {
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public UserDto toDto(User user) {
         if (user == null) {
             return null;
         }
-        return UserDto.builder()
-                .id(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .password(null) // Avoid exposing the password
-                .isAdmin(user.getIsAdmin())
-                .isInactive(user.getIsInactive())
-                .build();
+        return modelMapper.map(user, UserDto.class);
     }
 
-    public static User toEntity(UserDto userDto) {
+    public User toEntity(UserDto userDto) {
         if (userDto == null) {
             return null;
         }
-        return User.builder()
-                .userId(userDto.getId() != null ? userDto.getId() : 0)
-                .username(userDto.getUsername())
-                .email(userDto.getEmail())
-                .password(userDto.getPassword())
-                .isAdmin(userDto.getIsAdmin())
-                .isInactive(userDto.getIsInactive())
-                .build();
+        return modelMapper.map(userDto, User.class);
     }
 
-    public static User updateEntity(User user, UserDto userDto) {
-        if (userDto.getUsername() != null) {
-            user.setUsername(userDto.getUsername());
+    public User updateEntity(User user, UserDto userDto) {
+        if (userDto == null) {
+            return user;
         }
-        if (userDto.getPassword() != null) {
-            user.setPassword(userDto.getPassword());
-        }
-        user.setIsAdmin(userDto.getIsAdmin());
-        user.setIsInactive(userDto.getIsInactive());
+        modelMapper.map(userDto, user);
         return user;
     }
 }

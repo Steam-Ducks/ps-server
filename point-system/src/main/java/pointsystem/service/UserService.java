@@ -14,28 +14,35 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    @Autowired
     private final UserRepository userRepository;
+    private final UserConverter userConverter;
 
-    public UserService(UserRepository userRepository) {
+    @Autowired
+    public UserService(UserRepository userRepository, UserConverter userConverter) {
         this.userRepository = userRepository;
+        this.userConverter = userConverter;
     }
 
     public int createUser(UserDto userDto) {
-        User user = UserConverter.toEntity(userDto);
+        User user = userConverter.toEntity(userDto);
+
+        if (!user.isEmailvalidador()) {
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
+        }
+
         User userSaved = userRepository.save(user);
         return userSaved.getUserId();
     }
 
     public Optional<UserDto> getUserById(int userId) {
         return userRepository.findById(userId)
-                .map(UserConverter::toDto);
+                .map(userConverter::toDto);
     }
 
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(UserConverter::toDto)
+                .map(userConverter::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +51,7 @@ public class UserService {
 
         if (userEntity.isPresent()) {
             User user = userEntity.get();
-            User updatedUser = UserConverter.updateEntity(user, userDto);
+            User updatedUser = userConverter.updateEntity(user, userDto);
             userRepository.save(updatedUser);
         }
     }

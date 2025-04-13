@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -28,6 +29,10 @@ public class User {
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin = false;
 
-    @Column(name = "is_inactive", nullable = false)
-    private Boolean isInactive = false;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    public boolean isEmailvalidador() {
+        return email != null && (email.toLowerCase().endsWith("@altave.com") || email.toLowerCase().endsWith("@altave.com.br"));
+    }
 }
