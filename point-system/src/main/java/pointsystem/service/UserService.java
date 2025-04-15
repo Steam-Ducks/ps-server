@@ -1,5 +1,6 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public int createUser(UserDto userDto) {
         UserEntity user = userConverter.toEntity(userDto);
 
@@ -38,7 +40,7 @@ public class UserService {
         return userSaved.getUserId();
     }
 
-
+    @Transactional
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -46,6 +48,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void updateUserById(int userId, UserDto userDto) {
         Optional<UserEntity> userEntity = userRepository.findById(userId);
 

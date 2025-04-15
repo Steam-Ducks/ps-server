@@ -1,5 +1,6 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,21 +25,25 @@ public class PositionService {
         this.positionConverter = positionConverter;
     }
 
+    @Transactional
     public Integer createPosition(PositionDto positionDto) {
         Position position = positionConverter.toEntity(positionDto);
         Position savedPosition = positionRepository.save(position);
         return savedPosition.getId();
     }
 
+    @Transactional
     public Optional<PositionDto> getPositionById(Integer positionId) {
         return positionRepository.findById(positionId)
                 .map(positionConverter::toDto);
     }
 
+    @Transactional
     public List<PositionDto> getAllPositions() {
         return positionConverter.toDto(positionRepository.findAll());
     }
 
+    @Transactional
     public void updatePositionById(Integer positionId, PositionDto positionDto) {
         Optional<Position> positionEntity = positionRepository.findById(positionId);
 
@@ -53,6 +58,7 @@ public class PositionService {
         }
     }
 
+    @Transactional
     public void deletePositionById(Integer positionId) {
         if (positionRepository.existsById(positionId)) {
             positionRepository.deleteById(positionId);
