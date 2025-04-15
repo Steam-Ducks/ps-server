@@ -26,6 +26,18 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public int createUser(UserDto userDto) {
+        UserEntity user = userConverter.toEntity(userDto);
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (!user.isEmailvalidador()) {
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
+        }
+
+        UserEntity userSaved = userRepository.save(user);
+        return userSaved.getUserId();
+    }
+
 
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
