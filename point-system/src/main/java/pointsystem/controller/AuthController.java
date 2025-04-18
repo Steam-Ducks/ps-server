@@ -13,6 +13,7 @@ import pointsystem.service.AuthenticationService;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
