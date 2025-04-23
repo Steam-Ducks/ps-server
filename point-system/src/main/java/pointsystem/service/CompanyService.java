@@ -22,6 +22,7 @@ public class CompanyService {
         this.companyConverter = companyConverter;
     }
 
+    @Transactional
     public int createCompany(CompanyDto companyDto) {
         if (companyRepository.existsByCnpj(companyDto.getCnpj())) {
             throw new IllegalArgumentException("CNPJ já está em uso.");
@@ -36,6 +37,7 @@ public class CompanyService {
         return companyRepository.findById(companyId).map(companyConverter::toDto);
     }
 
+    @Transactional
     public List<CompanyDto> getAllCompanies() {
         return companyRepository.findAll().stream()
                 .sorted(Comparator.comparing(Company::getName))
@@ -43,6 +45,7 @@ public class CompanyService {
                 .toList();
     }
 
+    @Transactional
     public void updateCompanyById(int companyId, CompanyDto companyDto) {
         Optional<Company> companyEntity = companyRepository.findById(companyId);
         companyEntity.ifPresent(company -> {
@@ -52,6 +55,7 @@ public class CompanyService {
         });
     }
 
+    @Transactional
     public void deleteCompanyById(int companyId) {
         if (companyRepository.existsById(companyId)) {
             companyRepository.deleteById(companyId);

@@ -3,8 +3,9 @@ package pointsystem.converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pointsystem.dto.authentication.RegisterRequestDto;
 import pointsystem.dto.user.UserDto;
-import pointsystem.entity.User;
+import pointsystem.entity.UserEntity;
 
 @Component
 public class UserConverter {
@@ -12,25 +13,48 @@ public class UserConverter {
     @Autowired
     private ModelMapper modelMapper;
 
-    public UserDto toDto(User user) {
-        if (user == null) {
+    public UserEntity toEntity(UserDto dto) {
+        if (dto == null) {
             return null;
         }
-        return modelMapper.map(user, UserDto.class);
+        return modelMapper.map(dto, UserEntity.class);
     }
 
-    public User toEntity(UserDto userDto) {
-        if (userDto == null) {
+    public UserEntity toEntity(RegisterRequestDto dto) {
+        if (dto == null) {
             return null;
         }
-        return modelMapper.map(userDto, User.class);
+        return modelMapper.map(dto, UserEntity.class);
     }
 
-    public User updateEntity(User user, UserDto userDto) {
-        if (userDto == null) {
-            return user;
+    public UserDto toDto(UserEntity entity) {
+        if (entity == null) {
+            return null;
         }
-        modelMapper.map(userDto, user);
-        return user;
+        return modelMapper.map(entity, UserDto.class);
+    }
+
+    public UserEntity updateEntity(UserEntity entity, UserDto dto) {
+        if (entity == null || dto == null) {
+            return entity;
+        }
+
+        if (dto.getUsername() != null) {
+            entity.setUsername(dto.getUsername());
+        }
+        if (dto.getEmail() != null) {
+            entity.setEmail(dto.getEmail());
+        }
+        if (dto.getPassword() != null) {
+            entity.setPassword(dto.getPassword());
+        }
+        if (dto.getIsAdmin() != null) {
+            entity.setIsAdmin(dto.getIsAdmin());
+        }
+        if (dto.getIsActive() != null) {
+            entity.setIsActive(dto.getIsActive());
+        }
+
+        return entity;
     }
 }
