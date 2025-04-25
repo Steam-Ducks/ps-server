@@ -26,7 +26,7 @@ public class TimeRecordsService {
     }
 
     public Optional<TimeRecordsDto> getTimeRecordsById(Integer timeRecordsId) {
-        return timeRecordsRepository.findById(timeRecordsId)
+        return timeRecordsRepository.findById(Long.valueOf(timeRecordsId))
                 .map(timeRecordsConverter::toDto);
     }
 
@@ -35,7 +35,7 @@ public class TimeRecordsService {
     }
 
     public List<TimeRecordsDto> getTimeRecordsByEmployeeId(
-            Integer employeeId,
+            Long employeeId,
             LocalDateTime startDate,
             LocalDateTime endDate) {
 
@@ -56,7 +56,7 @@ public class TimeRecordsService {
     }
 
     public void updateTimeRecordsById(Integer timeRecordsId, TimeRecordsDto timeRecordsDto) {
-        Optional<TimeRecords> timeRecordsEntity = timeRecordsRepository.findById(timeRecordsId);
+        Optional<TimeRecords> timeRecordsEntity = timeRecordsRepository.findById(Long.valueOf(timeRecordsId));
 
         if (timeRecordsEntity.isPresent()) {
             TimeRecords timeRecords = timeRecordsEntity.get();

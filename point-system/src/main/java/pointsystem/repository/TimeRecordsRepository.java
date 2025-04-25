@@ -8,15 +8,16 @@ import pointsystem.entity.TimeRecords;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface TimeRecordsRepository extends JpaRepository<TimeRecords, Integer> {
+public interface TimeRecordsRepository extends JpaRepository<TimeRecords, Long> {
 
     @Query("SELECT t FROM TimeRecords t WHERE " +
             "t.employee.id = :employeeId " +
-            "AND (:startDate IS NULL OR t.dateTime >= :startDate) " +
-            "AND (:endDate IS NULL OR t.dateTime <= :endDate) " +
+            "AND (cast(:startDate as timestamp) IS NULL OR t.dateTime >= :startDate) " +
+            "AND (cast(:endDate as timestamp) IS NULL OR t.dateTime <= :endDate) " +
             "ORDER BY t.dateTime")
     List<TimeRecords> findByEmployeeId(
-            @Param("employeeId") Integer employeeId,
+            @Param("employeeId") Long employeeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
 }

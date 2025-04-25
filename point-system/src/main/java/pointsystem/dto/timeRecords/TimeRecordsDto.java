@@ -15,5 +15,5 @@ public class TimeRecordsDto {
     private Integer id;
     private Boolean isEdit;
     private Timestamp dateTime;
-    private Integer employeeId;
+    private Long employeeId;
 }

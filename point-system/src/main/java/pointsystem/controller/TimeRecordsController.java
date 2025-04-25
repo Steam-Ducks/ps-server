@@ -39,7 +39,7 @@ public class TimeRecordsController {
 
     @GetMapping("/employee/{employeeId}")
     public ResponseEntity<List<TimeRecordsDto>> getTimeRecordsByEmployeeId(
-            @PathVariable Integer employeeId,
+            @PathVariable Long employeeId,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endDate) {
 
