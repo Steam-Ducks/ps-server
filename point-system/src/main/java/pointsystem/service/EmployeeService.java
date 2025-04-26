@@ -12,7 +12,9 @@ import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
 import pointsystem.repository.PositionRepository;
-
+import java.util.Date;
+import java.time.ZoneId;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +63,7 @@ public class EmployeeService {
         Employee employee = employeeConverter.toEntity(employeeDto);
         Employee savedEmployee = employeeRepository.save(employee);
 
-        CompanyPositionEmployeeId companyPositionEmployeeId = new CompanyPositionEmployeeId(company.getId(), position.getId(), savedEmployee.getId());
-        CompanyPositionEmployee pivotTable = new CompanyPositionEmployee(companyPositionEmployeeId, company, position, savedEmployee, employeeDto.getSalary());
+        CompanyPositionEmployee pivotTable = new CompanyPositionEmployee(0, company, position, savedEmployee, employeeDto.getSalary());
 
         companyPositionEmployeeRepository.save(pivotTable);
         return savedEmployee.getId();
@@ -80,19 +81,71 @@ public class EmployeeService {
 
         return employeeConverter.toDto(
                 employees.stream()
+                        .filter(employee -> employee.getStatus())
                         .sorted(Comparator.comparing(Employee::getName))
                         .toList()
         );
     }
-
     @Transactional
     public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
         employeeEntity.ifPresent(employee -> {
-            Employee updatedEmployee = employeeConverter.toEntity(employeeDto);
-            updatedEmployee.setId(employeeId); // Ensure the ID is preserved
-            employeeRepository.save(updatedEmployee);
+            if (employeeDto.getName() != null) {
+                employee.setName(employeeDto.getName());
+            }
+            if (employeeDto.getStatus() != null) {
+                employee.setStatus(employeeDto.getStatus());
+            }
+            if (employeeDto.getPhoto() != null) {
+                employee.setPhoto(employeeDto.getPhoto());
+            }
+            if (employeeDto.getStartDate() != null) {
+                employee.setStartDate(employeeDto.getStartDate());
+            }
+
+            Optional<CompanyPositionEmployee> companyPositionEmployeeEntity =
+                    companyPositionEmployeeRepository.findByEmployeeId(employee.getId());
+
+            companyPositionEmployeeEntity.ifPresent(pivot -> {
+                if (employeeDto.getSalary() != null) {
+                    pivot.setSalary(employeeDto.getSalary());
+                }
+                if (employeeDto.getCompanyId() != null) {
+                    Company company = companyRepository.findById(employeeDto.getCompanyId())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
+                    pivot.setCompany(company);
+                }
+                if (employeeDto.getPositionId() != null) {
+                    Position position = positionRepository.findById(employeeDto.getPositionId())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cargo não encontrado"));
+                    pivot.setPosition(position);
+                }
+                companyPositionEmployeeRepository.save(pivot);
+            });
+
+            employeeRepository.save(employee);
         });
+    }
+
+    @Transactional
+    public void terminateEmployee(int employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+
+        employee.setStatus(false);
+        employee.setTerminationDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        Optional<CompanyPositionEmployee> companyPositionEmployeeEntity =
+                companyPositionEmployeeRepository.findByEmployeeId(employeeId);
+
+        companyPositionEmployeeEntity.ifPresent(pivot -> {
+            pivot.setCompany(null);
+            pivot.setPosition(null);
+            pivot.setSalary(0);
+            companyPositionEmployeeRepository.save(pivot);
+        });
+
+        employeeRepository.save(employee);
     }
 
     @Transactional

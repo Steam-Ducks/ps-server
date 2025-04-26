@@ -53,6 +53,16 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Erro no upload de foto"));
         }
     }
+    @PutMapping("/updatePhoto")
+    public ResponseEntity<?> updateEmployeePhoto(@RequestParam String photoURL, @RequestParam("file") MultipartFile file) {
+        try {
+            String updatedPhotoUrl = supabaseStorageService.updateEmployeePhoto(photoURL, file);
+
+            return ResponseEntity.ok(Map.of("photoUrl", updatedPhotoUrl));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Erro em atualizar a foto"));
+        }
+    }
 
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable int employeeId) {
@@ -76,9 +86,30 @@ public class EmployeeController {
     }
 
     @PutMapping("/{employeeId}")
-    public ResponseEntity<Void> updateEmployeeById(@PathVariable int employeeId, @RequestBody EmployeeDto employeeDto) {
-        employeeService.updateEmployeeById(employeeId, employeeDto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> updateEmployeeById(@PathVariable int employeeId, @RequestBody EmployeeDto employeeDto) {
+        try {
+            employeeService.updateEmployeeById(employeeId, employeeDto);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/{employeeId}/terminate")
+    public ResponseEntity<Void> terminateEmployee(@PathVariable int employeeId) {
+        try {
+            employeeService.terminateEmployee(employeeId);
+            return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/{employeeId}")

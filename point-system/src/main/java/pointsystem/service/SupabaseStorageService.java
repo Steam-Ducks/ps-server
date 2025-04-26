@@ -52,5 +52,30 @@ public class SupabaseStorageService {
             throw new RuntimeException("Erro no upload da imagem: " + e.getMessage(), e);
         }
     }
+    public String updateEmployeePhoto(String existingPhotoUrl, MultipartFile newFile) {
+        try {
+            if (existingPhotoUrl != null && !existingPhotoUrl.isEmpty()) {
+                String fileName = existingPhotoUrl.replace(SUPABASE_PUBLIC_URL, "");
+                HttpClient client = HttpClient.newHttpClient();
+
+                HttpRequest deleteRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(SUPABASE_URL + fileName))
+                        .header("Authorization", supabaseAuthToken)
+                        .DELETE()
+                        .build();
+
+                HttpResponse<String> deleteResponse = client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+
+                if (deleteResponse.statusCode() != 200 && deleteResponse.statusCode() != 204) {
+                    throw new RuntimeException("Erro ao atualizar a imagem no Supabase: " + deleteResponse.body());
+                }
+            }
+
+            return uploadEmployeePhoto(newFile);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating the image: " + e.getMessage(), e);
+        }
+    }
 
 }
