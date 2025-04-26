@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import pointsystem.dto.authentication.RegisterRequestDto;
 import pointsystem.dto.user.UserDto;
 import pointsystem.entity.UserEntity;
-
 @Component
 public class UserConverter {
 
@@ -54,7 +53,6 @@ public class UserConverter {
         if (dto.getIsActive() != null) {
             entity.setIsActive(dto.getIsActive());
         }
-
         return entity;
     }
 }
