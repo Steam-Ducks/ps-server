@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.converter_temp.PositionConverter;
+import pointsystem.converter.PositionConverter;
 import pointsystem.dto.position.PositionDto;
 import pointsystem.entity.Position;
 import pointsystem.repository.PositionRepository;

@@ -1,4 +1,4 @@
-package pointsystem.converter_temp;
+package pointsystem.converter;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.Provider;

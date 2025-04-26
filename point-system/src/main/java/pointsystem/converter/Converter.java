@@ -1,4 +1,4 @@
-package pointsystem.converter_temp;
+package pointsystem.converter;
 
 import java.util.List;
 

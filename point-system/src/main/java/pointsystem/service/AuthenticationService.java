@@ -7,7 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pointsystem.config.JwtUtil;
-import pointsystem.converter_temp.UserConverter;
+import pointsystem.converter.UserConverter;
 import pointsystem.dto.authentication.*;
 import pointsystem.entity.UserEntity;
 import pointsystem.repository.UserRepository;

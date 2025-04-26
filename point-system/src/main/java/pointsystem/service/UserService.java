@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import pointsystem.converter_temp.UserConverter;
+import pointsystem.converter.UserConverter;
 import pointsystem.dto.user.UserDto;
 import pointsystem.entity.UserEntity;
 import pointsystem.repository.UserRepository;
