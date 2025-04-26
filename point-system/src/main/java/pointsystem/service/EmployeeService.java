@@ -1,5 +1,6 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class EmployeeService {
         this.employeeConverter = employeeConverter;
     }
 
+    @Transactional
     public int createEmployee(EmployeeDto employeeDto) {
         if (!isValidCPF(employeeDto.getCpf())) {
             throw new IllegalArgumentException("CPF inválido.");
@@ -66,11 +68,13 @@ public class EmployeeService {
         return savedEmployee.getId();
     }
 
+    @Transactional
     public Optional<EmployeeDto> getEmployeeById(int employeeId) {
         return employeeRepository.findById(employeeId)
                 .map(employeeConverter::toDto);
     }
 
+    @Transactional
     public List<EmployeeDto> getAllEmployees() {
         List<Employee> employees = employeeRepository.findAll();
 
@@ -81,6 +85,7 @@ public class EmployeeService {
         );
     }
 
+    @Transactional
     public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
         employeeEntity.ifPresent(employee -> {
@@ -90,6 +95,7 @@ public class EmployeeService {
         });
     }
 
+    @Transactional
     public void deleteEmployeeById(int employeeId) {
         if (employeeRepository.existsById(employeeId)) {
             employeeRepository.deleteById(employeeId);

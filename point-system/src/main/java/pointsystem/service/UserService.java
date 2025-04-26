@@ -1,10 +1,12 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pointsystem.converter.UserConverter;
 import pointsystem.dto.user.UserDto;
-import pointsystem.entity.User;
+import pointsystem.entity.UserEntity;
 import pointsystem.repository.UserRepository;
 
 import java.util.List;
@@ -16,29 +18,29 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserConverter userConverter;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserConverter userConverter) {
+    public UserService(UserRepository userRepository, UserConverter userConverter, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userConverter = userConverter;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public int createUser(UserDto userDto) {
-        User user = userConverter.toEntity(userDto);
+        UserEntity user = userConverter.toEntity(userDto);
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (!user.isEmailvalidador()) {
             throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
 
-        User userSaved = userRepository.save(user);
+        UserEntity userSaved = userRepository.save(user);
         return userSaved.getUserId();
     }
 
-    public Optional<UserDto> getUserById(int userId) {
-        return userRepository.findById(userId)
-                .map(userConverter::toDto);
-    }
-
+    @Transactional
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -46,19 +48,15 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void updateUserById(int userId, UserDto userDto) {
-        Optional<User> userEntity = userRepository.findById(userId);
+        Optional<UserEntity> userEntity = userRepository.findById(userId);
 
         if (userEntity.isPresent()) {
-            User user = userEntity.get();
-            User updatedUser = userConverter.updateEntity(user, userDto);
-            userRepository.save(updatedUser);
-        }
-    }
-
-    public void deleteUserById(int userId) {
-        if (userRepository.existsById(userId)) {
-            userRepository.deleteById(userId);
+            UserEntity user = userEntity.get();
+            UserEntity updatedUserEntity = userConverter.updateEntity(user, userDto);
+            updatedUserEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(updatedUserEntity);
         }
     }
 }
