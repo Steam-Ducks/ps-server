@@ -15,24 +15,23 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "companies_employees_positions")
 public class CompanyPositionEmployee {
-    @EmbeddedId
-    private CompanyPositionEmployeeId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("companyId")
     @JoinColumn(name = "company_id")
     @JsonBackReference
     private Company company;
 
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("positionId")
     @JoinColumn(name = "position_id")
     private Position position;
 
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("employeeId")
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
