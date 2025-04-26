@@ -12,6 +12,12 @@ public class UserConverter {
     @Autowired
     private ModelMapper modelMapper;
 
+    public UserEntity toEntity(UserDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        return modelMapper.map(dto, UserEntity.class);
+    }
 
     public UserEntity toEntity(RegisterRequestDto dto) {
         if (dto == null) {
