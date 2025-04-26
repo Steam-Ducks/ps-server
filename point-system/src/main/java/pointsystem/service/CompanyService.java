@@ -2,7 +2,7 @@ package pointsystem.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import pointsystem.converter.CompanyConverter;
+import pointsystem.converter_temp.CompanyConverter;
 import pointsystem.dto.company.CompanyDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
