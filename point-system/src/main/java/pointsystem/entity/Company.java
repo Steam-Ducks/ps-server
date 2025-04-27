@@ -4,10 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "companies", uniqueConstraints = @UniqueConstraint(columnNames = "cnpj"))
 public class Company {
     @Id
@@ -28,8 +35,6 @@ public class Company {
     @JsonIgnore
     private List<CompanyPositionEmployee> employees ;
 
-    public Company() {}
-
     public Company(int id, String name, String cnpj, String contact) {
         this.id = id;
         this.name = name;
@@ -38,43 +43,4 @@ public class Company {
     }
 
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int companyId) {
-        this.id = companyId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCnpj() {
-        return cnpj;
-    }
-
-    public void setCnpj(String cnpj) {
-        this.cnpj = cnpj;
-    }
-
-    public String getContact() {
-        return contact;
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
-
-    public List<CompanyPositionEmployee> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(List<CompanyPositionEmployee> employees) {
-        this.employees = employees;
-    }
 }

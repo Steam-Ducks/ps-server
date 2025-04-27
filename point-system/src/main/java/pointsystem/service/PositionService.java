@@ -1,14 +1,13 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.dto.position.CreatePositionDto;
-import pointsystem.dto.position.UpdatePositionDto;
-import pointsystem.entity.Company;
+import pointsystem.converter.PositionConverter;
+import pointsystem.dto.position.PositionDto;
 import pointsystem.entity.Position;
-import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.PositionRepository;
 
 import java.util.List;
@@ -18,46 +17,53 @@ import java.util.Optional;
 public class PositionService {
 
     private final PositionRepository positionRepository;
-    private final CompanyRepository companyRepository;
+    private final PositionConverter positionConverter;
 
     @Autowired
-    public PositionService(PositionRepository positionRepository, CompanyRepository companyRepository) {
+    public PositionService(PositionRepository positionRepository, PositionConverter positionConverter) {
         this.positionRepository = positionRepository;
-        this.companyRepository = companyRepository;
+        this.positionConverter = positionConverter;
     }
 
-    public Integer createPosition(CreatePositionDto createPositionDto) {
-        Position position = new Position(0, createPositionDto.name());
-
+    @Transactional
+    public Integer createPosition(PositionDto positionDto) {
+        Position position = positionConverter.toEntity(positionDto);
         Position savedPosition = positionRepository.save(position);
         return savedPosition.getId();
     }
 
-    public Optional<Position> getPositionById(Integer positionId) {
-        return positionRepository.findById(positionId);
+    @Transactional
+    public Optional<PositionDto> getPositionById(Integer positionId) {
+        return positionRepository.findById(positionId)
+                .map(positionConverter::toDto);
     }
 
-    public List<Position> getAllPositions() {
-        return positionRepository.findAll();
+    @Transactional
+    public List<PositionDto> getAllPositions() {
+        return positionConverter.toDto(positionRepository.findAll());
     }
 
-    public void updatePositionById(Integer positionId, UpdatePositionDto updatePositionDto) {
+    @Transactional
+    public void updatePositionById(Integer positionId, PositionDto positionDto) {
         Optional<Position> positionEntity = positionRepository.findById(positionId);
 
         if (positionEntity.isPresent()) {
             Position position = positionEntity.get();
-            if(updatePositionDto.name() != null) {
-                position.setName(updatePositionDto.name());
+            if (positionDto.getName() != null) {
+                position.setName(positionDto.getName());
             }
-
             positionRepository.save(position);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Position not found");
         }
     }
 
+    @Transactional
     public void deletePositionById(Integer positionId) {
-        boolean exists = positionRepository.existsById(positionId);
-        if (exists) {
+        if (positionRepository.existsById(positionId)) {
             positionRepository.deleteById(positionId);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Position not found");
         }
     }
 }

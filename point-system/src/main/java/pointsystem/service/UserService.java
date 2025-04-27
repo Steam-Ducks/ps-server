@@ -1,67 +1,62 @@
 package pointsystem.service;
 
-
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import pointsystem.dto.user.CreateUserDto;
-import pointsystem.dto.user.UpdateUserDto;
-import pointsystem.entity.User;
+import pointsystem.converter.UserConverter;
+import pointsystem.dto.user.UserDto;
+import pointsystem.entity.UserEntity;
 import pointsystem.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    @Autowired
     private final UserRepository userRepository;
+    private final UserConverter userConverter;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    @Autowired
+    public UserService(UserRepository userRepository, UserConverter userConverter, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.userConverter = userConverter;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public int createUser(CreateUserDto createUserDto) {
-        User user = new User(
-                0,
-                createUserDto.username(),
-                createUserDto.password(),
-                createUserDto.email()
-        );
+    @Transactional
+    public int createUser(UserDto userDto) {
+        UserEntity user = userConverter.toEntity(userDto);
 
-        User userSaved = userRepository.save(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (!user.isEmailvalidador()) {
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
+        }
+
+        UserEntity userSaved = userRepository.save(user);
         return userSaved.getUserId();
     }
 
-    public Optional<User> getUserById(int userId) {
-        return userRepository.findById(userId);
+    @Transactional
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userConverter::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public void updateUserById(int userId, UpdateUserDto updateUserDto) {
-        Optional<User> userEntity = userRepository.findById(userId);
+    @Transactional
+    public void updateUserById(int userId, UserDto userDto) {
+        Optional<UserEntity> userEntity = userRepository.findById(userId);
 
         if (userEntity.isPresent()) {
-            User user = userEntity.get();
-            if(updateUserDto.username() != null) {
-                user.setUsername(updateUserDto.username());
-            }
-
-            if(updateUserDto.password() != null) {
-                user.setPassword(updateUserDto.password());
-            }
-            userRepository.save(user);
-        }
-
-    }
-
-    public void deleteUserById(int userID) {
-        boolean exists = userRepository.existsById(userID);
-        if (exists) {
-            userRepository.deleteById(userID);
+            UserEntity user = userEntity.get();
+            UserEntity updatedUserEntity = userConverter.updateEntity(user, userDto);
+            updatedUserEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(updatedUserEntity);
         }
     }
 }

@@ -1,22 +1,23 @@
 package pointsystem.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.dto.employee.CreateEmployeeDto;
-import pointsystem.dto.employee.EmployeeResponseDto;
-import pointsystem.dto.employee.UpdateEmployeeDto;
+import pointsystem.converter.EmployeeConverter;
+import pointsystem.dto.employee.EmployeeDto;
 import pointsystem.entity.*;
 import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
 import pointsystem.repository.PositionRepository;
-
+import java.util.Date;
+import java.time.ZoneId;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -24,81 +25,137 @@ public class EmployeeService {
     private final CompanyRepository companyRepository;
     private final PositionRepository positionRepository;
     private final CompanyPositionEmployeeRepository companyPositionEmployeeRepository;
+    private final EmployeeConverter employeeConverter;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository, PositionRepository positionRepository, CompanyPositionEmployeeRepository companyPositionEmployeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository,
+                           CompanyRepository companyRepository,
+                           PositionRepository positionRepository,
+                           CompanyPositionEmployeeRepository companyPositionEmployeeRepository,
+                           EmployeeConverter employeeConverter) {
         this.employeeRepository = employeeRepository;
         this.companyRepository = companyRepository;
         this.positionRepository = positionRepository;
         this.companyPositionEmployeeRepository = companyPositionEmployeeRepository;
+        this.employeeConverter = employeeConverter;
     }
 
-    public int createEmployee(CreateEmployeeDto createEmployeeDto) {
-
-        if (!isValidCPF(createEmployeeDto.cpf())) {
+    @Transactional
+    public int createEmployee(EmployeeDto employeeDto) {
+        if (!isValidCPF(employeeDto.getCpf())) {
             throw new IllegalArgumentException("CPF inválido.");
         }
 
-        if (employeeRepository.existsByCpf(createEmployeeDto.cpf())) {
+        if (employeeRepository.existsByCpf(employeeDto.getCpf())) {
             throw new IllegalArgumentException("CPF já cadastrado");
         }
 
-        Company company = companyRepository.findById(createEmployeeDto.companyId())
+        Company company = companyRepository.findById(employeeDto.getCompanyId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 
-        Position position = positionRepository.findById(createEmployeeDto.positionId())
+        Position position = positionRepository.findById(employeeDto.getPositionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cargo não encontrado"));
 
-        Employee employee = new Employee(0, createEmployeeDto.name(), createEmployeeDto.cpf(), true, null, createEmployeeDto.photo());
+        employeeDto.setCompany(company);
+        employeeDto.setPosition(position);
+        employeeDto.setStatus(true);
+
+        Employee employee = employeeConverter.toEntity(employeeDto);
         Employee savedEmployee = employeeRepository.save(employee);
 
-        CompanyPositionEmployeeId companyPositionEmployeeId = new CompanyPositionEmployeeId(company.getId(), position.getId(), savedEmployee.getId());
-        CompanyPositionEmployee pivotTable = new CompanyPositionEmployee(companyPositionEmployeeId, company, position, savedEmployee, createEmployeeDto.salary());
+        CompanyPositionEmployee pivotTable = new CompanyPositionEmployee(0, company, position, savedEmployee, employeeDto.getSalary());
 
         companyPositionEmployeeRepository.save(pivotTable);
         return savedEmployee.getId();
     }
 
-    public Optional<EmployeeResponseDto> getEmployeeById(int employeeId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        Optional<CompanyPositionEmployee> companyPosition = companyPositionEmployeeRepository.findByEmployeeId(employeeId);
-
-        return employee.map(e -> new EmployeeResponseDto(e, companyPosition.orElse(null)));
+    @Transactional
+    public Optional<EmployeeDto> getEmployeeById(int employeeId) {
+        return employeeRepository.findById(employeeId)
+                .map(employeeConverter::toDto);
     }
 
-    public List<EmployeeResponseDto> getAllEmployees() {
+    @Transactional
+    public List<EmployeeDto> getAllEmployees() {
         List<Employee> employees = employeeRepository.findAll();
 
-        return employees.stream()
-                .sorted(Comparator.comparing(Employee::getName))
-                .map(employee -> {
-                    Optional<CompanyPositionEmployee> companyPosition = companyPositionEmployeeRepository.findByEmployeeId(employee.getId());
-                    return new EmployeeResponseDto(employee, companyPosition.orElse(null));
-                })
-                .collect(Collectors.toList());
+        return employeeConverter.toDto(
+                employees.stream()
+                        .filter(employee -> employee.getStatus())
+                        .sorted(Comparator.comparing(Employee::getName))
+                        .toList()
+        );
     }
-
-    public void updateEmployeeById(int employeeId, UpdateEmployeeDto updateEmployeeDto) {
+    @Transactional
+    public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
         employeeEntity.ifPresent(employee -> {
-            if (updateEmployeeDto.name() != null) employee.setName(updateEmployeeDto.name());
-            if (updateEmployeeDto.cpf() != null) employee.setCpf(updateEmployeeDto.cpf());
-            if (updateEmployeeDto.status() != null) employee.setStatus(updateEmployeeDto.status());
-            if (updateEmployeeDto.photo() != null) employee.setPhoto(updateEmployeeDto.photo());
+            if (employeeDto.getName() != null) {
+                employee.setName(employeeDto.getName());
+            }
+            if (employeeDto.getStatus() != null) {
+                employee.setStatus(employeeDto.getStatus());
+            }
+            if (employeeDto.getPhoto() != null) {
+                employee.setPhoto(employeeDto.getPhoto());
+            }
+            if (employeeDto.getStartDate() != null) {
+                employee.setStartDate(employeeDto.getStartDate());
+            }
+
+            Optional<CompanyPositionEmployee> companyPositionEmployeeEntity =
+                    companyPositionEmployeeRepository.findByEmployeeId(employee.getId());
+
+            companyPositionEmployeeEntity.ifPresent(pivot -> {
+                if (employeeDto.getSalary() != null) {
+                    pivot.setSalary(employeeDto.getSalary());
+                }
+                if (employeeDto.getCompanyId() != null) {
+                    Company company = companyRepository.findById(employeeDto.getCompanyId())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
+                    pivot.setCompany(company);
+                }
+                if (employeeDto.getPositionId() != null) {
+                    Position position = positionRepository.findById(employeeDto.getPositionId())
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cargo não encontrado"));
+                    pivot.setPosition(position);
+                }
+                companyPositionEmployeeRepository.save(pivot);
+            });
+
             employeeRepository.save(employee);
         });
     }
 
+    @Transactional
+    public void terminateEmployee(int employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+
+        employee.setStatus(false);
+        employee.setTerminationDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        Optional<CompanyPositionEmployee> companyPositionEmployeeEntity =
+                companyPositionEmployeeRepository.findByEmployeeId(employeeId);
+
+        companyPositionEmployeeEntity.ifPresent(pivot -> {
+            pivot.setCompany(null);
+            pivot.setPosition(null);
+            pivot.setSalary(0);
+            companyPositionEmployeeRepository.save(pivot);
+        });
+
+        employeeRepository.save(employee);
+    }
+
+    @Transactional
     public void deleteEmployeeById(int employeeId) {
         if (employeeRepository.existsById(employeeId)) {
             employeeRepository.deleteById(employeeId);
         }
     }
 
-
-
     private boolean isValidCPF(String cpf) {
         return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
     }
-
 }

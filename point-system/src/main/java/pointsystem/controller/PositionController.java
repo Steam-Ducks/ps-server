@@ -5,75 +5,60 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import pointsystem.dto.position.CreatePositionDto;
-import pointsystem.dto.position.UpdatePositionDto;
-import pointsystem.entity.Position;
+import pointsystem.dto.position.PositionDto;
 import pointsystem.service.PositionService;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/positions")
 public class PositionController {
 
-    @Autowired
     private final PositionService positionService;
 
+    @Autowired
     public PositionController(PositionService positionService) {
         this.positionService = positionService;
     }
 
     @PostMapping
-    public ResponseEntity<Integer> createPosition(@RequestBody CreatePositionDto createPositionDto)
-    {
-        int positionId = positionService.createPosition(createPositionDto);
-        return ResponseEntity.created(URI.create("/api/company/" + positionId)).build();
+    public ResponseEntity<Integer> createPosition(@RequestBody PositionDto positionDto) {
+        int positionId = positionService.createPosition(positionDto);
+        return ResponseEntity.created(URI.create("/api/positions/" + positionId)).build();
     }
 
     @GetMapping("/{positionId}")
-    public ResponseEntity<Position> getPositionById(@PathVariable int positionId) {
-        try {
-            Optional<Position> position = positionService.getPositionById(positionId);
-            if (position.isPresent()) {
-                return ResponseEntity.ok(position.get());
-            }
-            else
-            {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+    public ResponseEntity<PositionDto> getPositionById(@PathVariable int positionId) {
+        return positionService.getPositionById(positionId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Position>> getAllPositions() {
-        try {
-            List<Position> positions = positionService.getAllPositions();
-            return ResponseEntity.ok(positions);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+    public ResponseEntity<List<PositionDto>> getAllPositions() {
+        return ResponseEntity.ok(positionService.getAllPositions());
     }
 
     @PutMapping("/{positionId}")
-    public ResponseEntity<Position> updatePositionById(@PathVariable int positionId, @RequestBody UpdatePositionDto positionDto) {
+    public ResponseEntity<Void> updatePositionById(@PathVariable int positionId, @RequestBody PositionDto positionDto) {
         try {
             positionService.updatePositionById(positionId, positionDto);
             return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
     @DeleteMapping("/{positionId}")
-    public ResponseEntity<Position> deletePositionById(@PathVariable int positionId) {
+    public ResponseEntity<Void> deletePositionById(@PathVariable int positionId) {
         try {
             positionService.deletePositionById(positionId);
             return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
