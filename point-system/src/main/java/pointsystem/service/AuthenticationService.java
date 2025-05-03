@@ -27,7 +27,7 @@ public class AuthenticationService {
 
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         if (!userEntity.isEmailvalidador()) {
-            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
+            throw new IllegalArgumentException("E-mail e/ou senha incorretos. Tente novamente.");
         }
 
         UserEntity userEntitySaved = userRepository.save(userEntity);
@@ -44,14 +44,14 @@ public class AuthenticationService {
         } catch (Exception e) {
             boolean userExists = userRepository.findByEmail(request.getEmail()).isPresent();
             if (userExists) {
-                throw new BadRequestException("Senha incorreta");
+                throw new BadRequestException("E-mail e/ou senha incorretos. Tente novamente.");
             } else {
-                throw new BadRequestException("Usuário não encontrado");
+                throw new BadRequestException("E-mail e/ou senha incorretos. Tente novamente.");
             }
         }
 
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
+                .orElseThrow(() -> new BadRequestException("E-mail e/ou senha incorretos. Tente novamente."));
 
         String token = jwtUtil.generateToken(userEntity.getEmail(), userEntity.getIsAdmin());
         return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
