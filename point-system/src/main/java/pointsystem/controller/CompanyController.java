@@ -5,7 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pointsystem.dto.company.CompanyDto;
 import pointsystem.service.CompanyService;
+import pointsystem.service.EmployeeService;
+import pointsystem.service.TimeRecordsService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +53,19 @@ public class CompanyController {
     public ResponseEntity<List<CompanyDto>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
+
+    @GetMapping("dashboard")
+    public ResponseEntity<?> getCompanyDashboard() {
+        try {
+            List<Map<String, Object>> dashboardData = companyService.getAllCompanyDashboardData();
+            return ResponseEntity.ok(dashboardData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro ao obter os dados do dashboard das empresas."));
+        }
+    }
+
+
 
     @PutMapping("/{companyId}")
     public ResponseEntity<Void> updateCompanyById(@PathVariable int companyId, @RequestBody CompanyDto companyDto) {
