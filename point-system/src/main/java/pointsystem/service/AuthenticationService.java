@@ -28,7 +28,7 @@ public class AuthenticationService {
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.setEmail(request.getEmail().toLowerCase());
         if (!userEntity.isEmailvalidador()) {
-            throw new IllegalArgumentException("E-mail e/ou senha incorretos. Tente novamente.");
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
 
         UserEntity userEntitySaved = userRepository.save(userEntity);
