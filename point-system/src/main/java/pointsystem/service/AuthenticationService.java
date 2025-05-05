@@ -33,7 +33,7 @@ public class AuthenticationService {
         UserEntity userEntitySaved = userRepository.save(userEntity);
 
         String token = jwtUtil.generateToken(userEntitySaved.getEmail(), userEntitySaved.getIsAdmin());
-        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin(), userEntity.getUsername());
     }
 
     public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) throws BadRequestException {
@@ -54,6 +54,6 @@ public class AuthenticationService {
                 .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
 
         String token = jwtUtil.generateToken(userEntity.getEmail(), userEntity.getIsAdmin());
-        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin(), userEntity.getUsername());
     }
 }
