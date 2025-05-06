@@ -36,6 +36,7 @@ public class UserService {
         if (!user.isEmailvalidador()) {
             throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
+        user.setEmail(userDto.getEmail().toLowerCase());
 
         UserEntity userSaved = userRepository.save(user);
         return userSaved.getUserId();
@@ -57,6 +58,7 @@ public class UserService {
             UserEntity user = userEntity.get();
             UserEntity updatedUserEntity = userConverter.updateEntity(user, userDto);
             updatedUserEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+            updatedUserEntity.setEmail(userDto.getEmail().toLowerCase());
             userRepository.save(updatedUserEntity);
         }
     }
