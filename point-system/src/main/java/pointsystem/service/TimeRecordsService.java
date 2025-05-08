@@ -10,6 +10,7 @@ import pointsystem.entity.TimeRecords;
 import pointsystem.repository.TimeRecordsRepository;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,6 +67,7 @@ public class TimeRecordsService {
             }
 
             timeRecords.setIsEdit(true);
+            timeRecords.setUpdatedAt(OffsetDateTime.now());
 
             timeRecordsRepository.save(timeRecords);
         } else {
