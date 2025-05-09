@@ -26,8 +26,9 @@ public class AuthenticationService {
         UserEntity userEntity = userConverter.toEntity(request);
 
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        userEntity.setEmail(request.getEmail().toLowerCase());
         if (!userEntity.isEmailvalidador()) {
-            throw new IllegalArgumentException("E-mail e/ou senha incorretos. Tente novamente.");
+            throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
 
         UserEntity userEntitySaved = userRepository.save(userEntity);
@@ -38,16 +39,12 @@ public class AuthenticationService {
 
     public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) throws BadRequestException {
         try {
+            request.setEmail(request.getEmail().toLowerCase());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (Exception e) {
-            boolean userExists = userRepository.findByEmail(request.getEmail()).isPresent();
-            if (userExists) {
-                throw new BadRequestException("E-mail e/ou senha incorretos. Tente novamente.");
-            } else {
-                throw new BadRequestException("E-mail e/ou senha incorretos. Tente novamente.");
-            }
+            throw new BadRequestException("E-mail e/ou senha incorretos. Tente novamente.");
         }
 
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
