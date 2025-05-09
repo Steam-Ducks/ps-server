@@ -3,6 +3,7 @@ package pointsystem.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -39,8 +40,10 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/v3/api-docs.yaml"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+
+                        ).permitAll() // Allow public access to auth endpoints
+                        .requestMatchers(HttpMethod.PUT, "/api/timerecords/**").permitAll()
+                        .anyRequest().authenticated() // Require authentication for all other endpoints
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless sessions

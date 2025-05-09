@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Setter
 @Getter
@@ -26,8 +28,9 @@ public class TimeRecords {
     @Column(name = "date_time", nullable = false)
     private Timestamp dateTime;
 
-    @Column(name = "updated_at", nullable = true)
-    private Timestamp updatedAt;
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id", nullable = false)
