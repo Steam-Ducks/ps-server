@@ -38,7 +38,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/v3/api-docs.yaml"
                         ).permitAll() // Allow public access to auth endpoints
-                        .requestMatchers(HttpMethod.PUT, "/api/timerecords/**").permitAll()
                         .anyRequest().authenticated() // Require authentication for all other endpoints
                 )
                 .sessionManagement(session -> session
