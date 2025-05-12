@@ -87,6 +87,20 @@ public class EmployeeService {
         );
     }
     @Transactional
+    public List<Integer> getAllEmployeesFromCompany(int companyId) {
+        return companyPositionEmployeeRepository.findByCompanyId(companyId);
+    }
+
+
+    public Integer countEmployeesByMonth(List<Integer> employeeIds, LocalDate firstDay, LocalDate lastDay) {
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
+        return (int) employees.stream()
+                .filter(employee -> employee.getStartDate() != null)
+                .filter(employee -> !employee.getStartDate().isBefore(firstDay) && !employee.getStartDate().isAfter(lastDay))
+                .count();
+    }
+
+    @Transactional
     public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
         employeeEntity.ifPresent(employee -> {
