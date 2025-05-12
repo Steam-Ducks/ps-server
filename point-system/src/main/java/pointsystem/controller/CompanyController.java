@@ -54,19 +54,6 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
-    @GetMapping("dashboard")
-    public ResponseEntity<?> getCompanyDashboard() {
-        try {
-            List<Map<String, Object>> dashboardData = companyService.getAllCompanyDashboardData();
-            return ResponseEntity.ok(dashboardData);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erro ao obter os dados do dashboard das empresas."));
-        }
-    }
-
-
-
     @PutMapping("/{companyId}")
     public ResponseEntity<Void> updateCompanyById(@PathVariable int companyId, @RequestBody CompanyDto companyDto) {
         companyService.updateCompanyById(companyId, companyDto);

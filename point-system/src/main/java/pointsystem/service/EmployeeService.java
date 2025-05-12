@@ -88,10 +88,7 @@ public class EmployeeService {
     }
     @Transactional
     public List<Integer> getAllEmployeesFromCompany(int companyId) {
-        List<CompanyPositionEmployee> companyPositionEmployees = companyPositionEmployeeRepository.findByCompanyId(companyId);
-        return companyPositionEmployees.stream()
-                .map(companyPositionEmployee -> companyPositionEmployee.getEmployee().getId())
-                .toList();
+        return companyPositionEmployeeRepository.findByCompanyId(companyId);
     }
 
 

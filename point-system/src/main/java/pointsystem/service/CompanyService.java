@@ -8,6 +8,7 @@ import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -71,24 +72,28 @@ public class CompanyService {
     }
 
     @Transactional
-    public List<Map<String, Object>> getAllCompanyDashboardData() {
+    public List<Map<String, Object>> getAllCompanyDashboardData(String startDate, String endDate) {
         List<Integer> companyIds = companyRepository.findAllCompanyIds();
+        //threads for parallel processing, many calculations required
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         List<CompletableFuture<Map<String, Object>>> futures = companyIds.stream()
                 .map(companyId -> CompletableFuture.supplyAsync(() -> {
                     List<Integer> employeesIds = employeeService.getAllEmployeesFromCompany(companyId);
 
-                    LocalDateTime firstDay = LocalDateTime.now()
-                            .withDayOfMonth(1).withHour(0)
-                            .withMinute(0).withSecond(0);
+                    LocalDateTime firstDay = LocalDate.parse(startDate).atStartOfDay();
 
-                    LocalDateTime lastDay = LocalDateTime.now()
-                            .withDayOfMonth(LocalDate.now().lengthOfMonth())
-                            .withHour(23).withMinute(59).withSecond(59);
+                    LocalDateTime lastDay = LocalDate.parse(endDate).atTime(23, 59, 59);
+
+                    // time between start and end is the period for the query
+                    Duration period = Duration.between(firstDay, lastDay);
+
+                    LocalDateTime lastPeriodStart = firstDay.minus(period);
+                    LocalDateTime lastPeriodEnd = lastDay.minus(period);
 
                     double totalSalary = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, firstDay, lastDay);
-                    double totalSalaryLastMonth = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, firstDay.minusMonths(1), lastDay.minusMonths(1));
+                    double totalSalaryLastPeriod = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, lastPeriodStart, lastPeriodEnd);
+
                     int totalEmployees = employeesIds.size();
                     int newEmployees = employeeService.countEmployeesByMonth(employeesIds, firstDay.toLocalDate(), lastDay.toLocalDate());
 
@@ -96,7 +101,7 @@ public class CompanyService {
                     companyData.put("companyId", companyId);
                     companyData.put("totalEmployees", totalEmployees);
                     companyData.put("totalSalary", totalSalary);
-                    companyData.put("totalSalaryLastMonth", totalSalaryLastMonth);
+                    companyData.put("totalSalaryLastPeriod", totalSalaryLastPeriod);
                     companyData.put("newEmployees", newEmployees);
 
                     return companyData;
