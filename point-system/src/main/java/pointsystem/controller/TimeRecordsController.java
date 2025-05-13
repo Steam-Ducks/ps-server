@@ -72,4 +72,14 @@ public class TimeRecordsController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
+
+    @DeleteMapping("/{timeRecordsId}")
+    public ResponseEntity<Void> deleteTimeRecordsById(@PathVariable int timeRecordsId) {
+        try {
+            timeRecordsService.deleteTimeRecordsById(timeRecordsId);
+            return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            throw e;
+        }
+    }
 }
