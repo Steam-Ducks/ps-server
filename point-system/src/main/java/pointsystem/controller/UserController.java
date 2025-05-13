@@ -34,6 +34,16 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
+        UserDto user = userService.getUserById(id);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateUser(@PathVariable int id, @RequestBody UserDto userDto) {
         userService.updateUserById(id, userDto);
