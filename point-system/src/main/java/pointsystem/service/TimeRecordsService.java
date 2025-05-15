@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -85,21 +86,24 @@ public class TimeRecordsService {
 
     // operações para exibir dados no dashboard
 
-    public double calculateTotalSalaryByCompanyId(
+    public Map<String, Double> calculateTotalSalaryByCompanyId(
             int companyId,
             LocalDateTime startDate,
             LocalDateTime endDate) {
         double totalSalary = 0;
+        double totalHours = 0;
+
         List<Integer> employeeIds = employeeService.getAllEmployeesFromCompany(companyId);
         if (employeeIds.isEmpty()) {
-            return 0.0;
+            return Map.of("totalSalary", 0.0, "totalWorkedHours", 0.0);
         }
         for (Integer employeeId : employeeIds) {
             List<TimeRecordsDto> employeeTimeRecords = getTimeRecordsByEmployeeId(Long.valueOf(employeeId), startDate, endDate);
-            totalSalary += calculateSalaryByEmployeeId(employeeTimeRecords, employeeId);
+            totalHours += calculateTotalHours(employeeTimeRecords);
+            totalSalary += calculateSalaryByEmployeeId(totalHours, employeeId);
         }
 
-        return totalSalary;
+        return Map.of("totalSalary", totalSalary, "totalWorkedHours", totalHours);
     }
 
     public double calculateTotalHours(List<TimeRecordsDto> timeRecords) {
@@ -126,11 +130,10 @@ public class TimeRecordsService {
         return rounded.doubleValue();
     }
 
-    public double calculateSalaryByEmployeeId(List<TimeRecordsDto> timeRecords, Integer employeeId) {
-        if (timeRecords.isEmpty()) {
+    public double calculateSalaryByEmployeeId(double totalHours, Integer employeeId) {
+        if (totalHours <= 0) {
             return 0.0;
         }
-        double totalHours = calculateTotalHours(timeRecords);
         double salary = companyPositionEmployeeRepository.findByEmployeeId(employeeId).get().getSalary();
         return new BigDecimal(totalHours * salary).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }

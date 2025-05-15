@@ -49,21 +49,7 @@ public class TimeRecordsController {
         );
     }
 
-    @GetMapping("/company/{companyId}")
-    public ResponseEntity<?> getTotalSalaryByCompanyId(
-            @PathVariable int companyId,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime endDate) {
 
-        try {
-            double totalSalary = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, startDate, endDate);
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of("totalSalary", totalSalary));
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erro ao calcular o salário total"));
-        }
-    }
 
     @PostMapping
     public ResponseEntity<TimeRecordsDto> createTimeRecords(@RequestBody TimeRecordsDto timeRecordsDto) {

@@ -91,8 +91,14 @@ public class CompanyService {
                     LocalDateTime lastPeriodStart = firstDay.minus(period);
                     LocalDateTime lastPeriodEnd = lastDay.minus(period);
 
-                    double totalSalary = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, firstDay, lastDay);
-                    double totalSalaryLastPeriod = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, lastPeriodStart, lastPeriodEnd);
+                    Map<String, Double> currentPeriodData = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, firstDay, lastDay);
+                    Map<String, Double> lastPeriodData = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, lastPeriodStart, lastPeriodEnd);
+
+                    double totalSalary = currentPeriodData.get("totalSalary");
+                    double totalWorkedHours = currentPeriodData.get("totalWorkedHours");
+
+                    double totalSalaryLastPeriod = lastPeriodData.get("totalSalary");
+                    double totalWorkedHoursLastPeriod = lastPeriodData.get("totalWorkedHours");
 
                     int totalEmployees = employeesIds.size();
                     int newEmployees = employeeService.countEmployeesByMonth(employeesIds, firstDay.toLocalDate(), lastDay.toLocalDate());
@@ -100,6 +106,7 @@ public class CompanyService {
                     Map<String, Object> companyData = new HashMap<>();
                     companyData.put("companyId", companyId);
                     companyData.put("totalEmployees", totalEmployees);
+                    companyData.put("totalWorkedHours", totalWorkedHours);
                     companyData.put("totalSalary", totalSalary);
                     companyData.put("totalSalaryLastPeriod", totalSalaryLastPeriod);
                     companyData.put("newEmployees", newEmployees);
