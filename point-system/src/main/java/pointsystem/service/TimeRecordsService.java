@@ -31,6 +31,14 @@ public class TimeRecordsService {
     private final TimeRecordsHistoryRepository timeRecordsHistoryRepository;
     private final UserRepository userRepository;
 
+    @Autowired
+    public TimeRecordsService(TimeRecordsRepository timeRecordsRepository, TimeRecordsHistoryRepository timeRecordsHistoryRepository, TimeRecordsConverter timeRecordsConverter, UserRepository userRepository) {
+        this.timeRecordsRepository = timeRecordsRepository;
+        this.timeRecordsHistoryRepository = timeRecordsHistoryRepository;
+        this.timeRecordsConverter = timeRecordsConverter;
+        this.userRepository = userRepository;
+    }
+
     public Optional<TimeRecordsDto> getTimeRecordsById(Integer timeRecordsId) {
         return timeRecordsRepository.findById(Long.valueOf(timeRecordsId))
                 .map(timeRecordsConverter::toDto);
