@@ -10,6 +10,7 @@ import pointsystem.entity.TimeRecords;
 import pointsystem.repository.TimeRecordsRepository;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,8 +67,17 @@ public class TimeRecordsService {
             }
 
             timeRecords.setIsEdit(true);
+            timeRecords.setUpdatedAt(OffsetDateTime.now());
 
             timeRecordsRepository.save(timeRecords);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found");
+        }
+    }
+
+    public void deleteTimeRecordsById(Integer timeRecordsId) {
+        if (timeRecordsRepository.existsById(Long.valueOf(timeRecordsId))) {
+            timeRecordsRepository.deleteById(Long.valueOf(timeRecordsId));
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found");
         }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -16,4 +17,5 @@ public class TimeRecordsDto {
     private Boolean isEdit;
     private Timestamp dateTime;
     private Long employeeId;
+    private OffsetDateTime updatedAt;
 }
