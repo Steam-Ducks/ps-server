@@ -7,7 +7,6 @@ import pointsystem.dto.company.CompanyDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,17 +90,17 @@ public class CompanyService {
                     LocalDateTime lastPeriodStart = firstDay.minus(period);
                     LocalDateTime lastPeriodEnd = lastDay.minus(period);
 
-                    Map<String, Double> currentPeriodData = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, firstDay, lastDay);
-                    Map<String, Double> lastPeriodData = timeRecordsService.calculateTotalSalaryByCompanyId(companyId, lastPeriodStart, lastPeriodEnd);
+                    Map<String, Object> currentPeriodData = timeRecordsService.calculateCompanyMetrics(companyId, firstDay, lastDay, true);
+                    Map<String, Object> lastPeriodData = timeRecordsService.calculateCompanyMetrics(companyId, lastPeriodStart, lastPeriodEnd, false);
 
-                    double totalSalary = currentPeriodData.get("totalSalary");
-                    double totalWorkedHours = currentPeriodData.get("totalWorkedHours");
+                    double totalSalary = (double) currentPeriodData.get("totalSalary");
+                    double totalWorkedHours = (double) currentPeriodData.get("totalWorkedHours");
+                    Map<String, Integer> manualChangesByDate = (Map<String, Integer>) currentPeriodData.get("manualChangesByDate");
 
-                    double totalSalaryLastPeriod = lastPeriodData.get("totalSalary");
-                    double totalWorkedHoursLastPeriod = lastPeriodData.get("totalWorkedHours");
+                    double totalSalaryLastPeriod = (double) lastPeriodData.get("totalSalary");
 
                     int totalEmployees = employeesIds.size();
-                    int newEmployees = employeeService.countEmployeesByMonth(employeesIds, firstDay.toLocalDate(), lastDay.toLocalDate());
+                    Map<String, Integer> newEmployees = employeeService.countEmployeesByMonth(employeesIds, firstDay.toLocalDate(), lastDay.toLocalDate());
 
                     Map<String, Object> companyData = new HashMap<>();
                     companyData.put("companyId", companyId);
@@ -110,6 +109,7 @@ public class CompanyService {
                     companyData.put("totalSalary", totalSalary);
                     companyData.put("totalSalaryLastPeriod", totalSalaryLastPeriod);
                     companyData.put("newEmployees", newEmployees);
+                    companyData.put("manualChangesByDate", manualChangesByDate);
 
                     return companyData;
                 }, executor))

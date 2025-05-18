@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,24 +87,36 @@ public class TimeRecordsService {
 
     // operações para exibir dados no dashboard
 
-    public Map<String, Double> calculateTotalSalaryByCompanyId(
+    public Map<String, Object> calculateCompanyMetrics(
             int companyId,
             LocalDateTime startDate,
-            LocalDateTime endDate) {
+            LocalDateTime endDate,
+            boolean returnAll) {
         double totalSalary = 0;
         double totalHours = 0;
+        Map<String, Integer> editedRecords = new HashMap<>();
 
         List<Integer> employeeIds = employeeService.getAllEmployeesFromCompany(companyId);
         if (employeeIds.isEmpty()) {
-            return Map.of("totalSalary", 0.0, "totalWorkedHours", 0.0);
+            return Map.of("totalSalary", 0.0, "totalWorkedHours", 0.0, "manualChangesByDate", editedRecords);
         }
+
         for (Integer employeeId : employeeIds) {
             List<TimeRecordsDto> employeeTimeRecords = getTimeRecordsByEmployeeId(Long.valueOf(employeeId), startDate, endDate);
             totalHours += calculateTotalHours(employeeTimeRecords);
             totalSalary += calculateSalaryByEmployeeId(totalHours, employeeId);
+
+            if (returnAll) {
+                employeeTimeRecords.stream()
+                        .filter(TimeRecordsDto::getIsEdit)
+                        .forEach(record -> {
+                            String date = record.getDateTime().toLocalDateTime().toLocalDate().toString();
+                            editedRecords.put(date, editedRecords.getOrDefault(date, 0) + 1);
+                        });
+            }
         }
 
-        return Map.of("totalSalary", totalSalary, "totalWorkedHours", totalHours);
+        return Map.of("totalSalary", totalSalary, "totalWorkedHours", totalHours, "manualChangesByDate", editedRecords);
     }
 
     public double calculateTotalHours(List<TimeRecordsDto> timeRecords) {
