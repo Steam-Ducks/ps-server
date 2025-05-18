@@ -9,12 +9,13 @@ import pointsystem.dto.timeRecords.TimeRecordsDto;
 import pointsystem.entity.TimeRecords;
 import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.TimeRecordsRepository;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,6 +78,7 @@ public class TimeRecordsService {
             }
 
             timeRecords.setIsEdit(true);
+            timeRecords.setUpdatedAt(Timestamp.from(OffsetDateTime.now().toInstant()));
 
             timeRecordsRepository.save(timeRecords);
         } else {
@@ -149,5 +151,13 @@ public class TimeRecordsService {
         }
         double salary = companyPositionEmployeeRepository.findByEmployeeId(employeeId).get().getSalary();
         return new BigDecimal(totalHours * salary).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    public void deleteTimeRecordsById(Integer timeRecordsId) {
+        if (timeRecordsRepository.existsById(Long.valueOf(timeRecordsId))) {
+            timeRecordsRepository.deleteById(Long.valueOf(timeRecordsId));
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found");
+        }
     }
 }
