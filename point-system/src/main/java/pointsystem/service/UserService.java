@@ -51,6 +51,12 @@ public class UserService {
     }
 
     @Transactional
+    public UserDto getUserById(int userId) {
+        Optional<UserEntity> userEntity = userRepository.findById(userId);
+        return userEntity.map(userConverter::toDto).orElse(null);
+    }
+
+    @Transactional
     public void updateUserById(int userId, UserDto userDto) {
         Optional<UserEntity> userEntity = userRepository.findById(userId);
 
