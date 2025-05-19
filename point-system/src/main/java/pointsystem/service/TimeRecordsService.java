@@ -78,7 +78,7 @@ public class TimeRecordsService {
             }
 
             timeRecords.setIsEdit(true);
-            timeRecords.setUpdatedAt(Timestamp.from(OffsetDateTime.now().toInstant()));
+            timeRecords.setUpdatedAt(OffsetDateTime.now());
 
             timeRecordsRepository.save(timeRecords);
         } else {
