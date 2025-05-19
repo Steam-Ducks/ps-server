@@ -44,7 +44,7 @@ public class UserService {
 
     @Transactional
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
+        return userRepository.findByIsActiveTrue()
                 .stream()
                 .map(userConverter::toDto)
                 .collect(Collectors.toList());
