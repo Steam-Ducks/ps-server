@@ -2,6 +2,7 @@ package pointsystem.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import pointsystem.converter.UserConverter;
@@ -35,6 +36,7 @@ public class UserService {
         if (!user.isEmailvalidador()) {
             throw new IllegalArgumentException("O e-mail deve ser do domínio '@altave'");
         }
+        user.setEmail(userDto.getEmail().toLowerCase());
 
         UserEntity userSaved = userRepository.save(user);
         return userSaved.getUserId();
@@ -42,10 +44,16 @@ public class UserService {
 
     @Transactional
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
+        return userRepository.findByIsActiveTrue()
                 .stream()
                 .map(userConverter::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserDto getUserById(int userId) {
+        Optional<UserEntity> userEntity = userRepository.findById(userId);
+        return userEntity.map(userConverter::toDto).orElse(null);
     }
 
     @Transactional
@@ -56,6 +64,7 @@ public class UserService {
             UserEntity user = userEntity.get();
             UserEntity updatedUserEntity = userConverter.updateEntity(user, userDto);
             updatedUserEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+            updatedUserEntity.setEmail(userDto.getEmail().toLowerCase());
             userRepository.save(updatedUserEntity);
         }
     }

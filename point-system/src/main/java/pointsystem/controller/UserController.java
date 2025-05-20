@@ -3,6 +3,7 @@ package pointsystem.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pointsystem.dto.user.UserDto;
 import pointsystem.service.UserService;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
@@ -32,6 +34,16 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
+        UserDto user = userService.getUserById(id);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PutMapping("/{id}")

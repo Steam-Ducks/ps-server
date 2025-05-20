@@ -30,7 +30,9 @@ public class UserConverter {
         if (entity == null) {
             return null;
         }
-        return modelMapper.map(entity, UserDto.class);
+        UserDto dto = modelMapper.map(entity, UserDto.class);
+        dto.setPassword(null);
+        return dto;
     }
 
     public UserEntity updateEntity(UserEntity entity, UserDto dto) {

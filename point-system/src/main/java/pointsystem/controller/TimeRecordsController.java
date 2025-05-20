@@ -12,6 +12,7 @@ import pointsystem.service.TimeRecordsService;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -48,6 +49,8 @@ public class TimeRecordsController {
         );
     }
 
+
+
     @PostMapping
     public ResponseEntity<TimeRecordsDto> createTimeRecords(@RequestBody TimeRecordsDto timeRecordsDto) {
         try {
@@ -70,6 +73,16 @@ public class TimeRecordsController {
             throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @DeleteMapping("/{timeRecordsId}")
+    public ResponseEntity<Void> deleteTimeRecordsById(@PathVariable int timeRecordsId) {
+        try {
+            timeRecordsService.deleteTimeRecordsById(timeRecordsId);
+            return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         }
     }
 }
