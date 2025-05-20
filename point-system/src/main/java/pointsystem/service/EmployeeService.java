@@ -85,7 +85,19 @@ public class EmployeeService {
         );
     }
     @Transactional
-    public List<Integer> getAllEmployeesFromCompany(int companyId) {
+    public List<EmployeeDto> getAllEmployeesFromCompany(int companyId) {
+        List<Integer> employeeIds = getAllEmployeeIdsFromCompany(companyId);
+
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
+        return employeeConverter.toDto(
+                employees.stream()
+                        .filter(Employee::getStatus)
+                        .sorted(Comparator.comparing(Employee::getName))
+                        .toList()
+        );
+    }
+    @Transactional
+    public List<Integer> getAllEmployeeIdsFromCompany(int companyId) {
         return companyPositionEmployeeRepository.findByCompanyId(companyId);
     }
 
@@ -177,4 +189,6 @@ public class EmployeeService {
     private boolean isValidCPF(String cpf) {
         return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
     }
+
+
 }

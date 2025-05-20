@@ -11,7 +11,6 @@ import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.TimeRecordsRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -98,7 +97,7 @@ public class TimeRecordsService {
         double totalHours = 0;
         Map<String, Integer> editedRecords = new HashMap<>();
 
-        List<Integer> employeeIds = employeeService.getAllEmployeesFromCompany(companyId);
+        List<Integer> employeeIds = employeeService.getAllEmployeeIdsFromCompany(companyId);
         if (employeeIds.isEmpty()) {
             return Map.of("totalSalary", 0.0, "totalWorkedHours", 0.0, "manualChangesByDate", editedRecords);
         }
