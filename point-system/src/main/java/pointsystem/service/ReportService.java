@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import pointsystem.dto.employee.EmployeeDto;
+import pointsystem.dto.timeRecords.TimeRecordsDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
@@ -20,10 +21,12 @@ import java.util.List;
 public class ReportService {
     private final CompanyRepository companyRepository;
     private final EmployeeService employeeService;
+    private final TimeRecordsService timeRecordsService;
 
-    public ReportService(CompanyRepository companyRepository, EmployeeService employeeService) {
+    public ReportService(CompanyRepository companyRepository, EmployeeService employeeService, TimeRecordsService timeRecordsService) {
         this.companyRepository = companyRepository;
         this.employeeService = employeeService;
+        this.timeRecordsService = timeRecordsService;
     }
 
 
@@ -94,12 +97,110 @@ public class ReportService {
             throw new IOException("Erro ao gerar o relatório de funcionários", e);
         }
     }
-    /*
-    public byte[] generateTimeRecordReport(Integer employeeId, LocalDate startDate, LocalDate endDate) {
+
+    public byte[] generateTimeRecordReport(Integer employeeId, LocalDate startDate, LocalDate endDate) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Registros de Tempo");
+
+            List<TimeRecordsDto> timeRecords = timeRecordsService.getTimeRecordsByEmployeeId(
+                    Long.valueOf(employeeId),
+                    startDate.atStartOfDay(),
+                    endDate.atTime(23, 59)
+            );
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Entrada");
+            header.createCell(1).setCellValue("Editado (Entrada)");
+            header.createCell(2).setCellValue("Saída");
+            header.createCell(3).setCellValue("Editado (Saída)");
+            header.createCell(4).setCellValue("Total de Horas");
+
+            int rowIndex = 1;
+            for (int i = 0; i < timeRecords.size(); i += 2) {
+                Row row = sheet.createRow(rowIndex++);
+                TimeRecordsDto entry = timeRecords.get(i);
+                row.createCell(0).setCellValue(entry.getDateTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                row.createCell(1).setCellValue(entry.getIsEdit() ? "SIM" : "NÃO");
+
+                if (i + 1 < timeRecords.size()) {
+                    TimeRecordsDto exit = timeRecords.get(i + 1);
+                    row.createCell(2).setCellValue(exit.getDateTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                    row.createCell(3).setCellValue(exit.getIsEdit() ? "SIM" : "NÃO");
+
+                    double totalHours = timeRecordsService.calculateTotalHours(List.of(entry, exit));
+                    row.createCell(4).setCellValue(String.format("%.2f", totalHours));
+                } else {
+                    row.createCell(2).setCellValue("");
+                    row.createCell(3).setCellValue("");
+                    row.createCell(4).setCellValue("");
+                }
+            }
+
+            for (int i = 0; i < 5; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new IOException("Erro ao gerar o relatório de registros de tempo", e);
+        }
     }
 
-    public byte[] generateCompanyHoursReport(Integer companyId) {
-    }
 
-     */
+    public byte[] generateCompanyHoursReport(Integer companyId, LocalDate startDate, LocalDate endDate) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Horas por Empresa");
+
+            Company company = companyRepository.findById(companyId)
+                    .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada com o ID: " + companyId));
+            List<EmployeeDto> employees = employeeService.getAllEmployeesFromCompany(companyId);
+
+            double totalCompanyHours = 0;
+
+            Row companyRow = sheet.createRow(0);
+            companyRow.createCell(0).setCellValue("Nome da Empresa:");
+            companyRow.createCell(1).setCellValue(company.getName());
+            companyRow.createCell(2).setCellValue("Horas Totais:");
+
+            // Add headers
+            Row header = sheet.createRow(2);
+            header.createCell(0).setCellValue("Nome Funcionário");
+            header.createCell(1).setCellValue("Cargo");
+            header.createCell(2).setCellValue("Salário");
+            header.createCell(3).setCellValue("Horas Trabalhadas");
+
+            // Populate employee data
+            int rowIndex = 3;
+            for (EmployeeDto employee : employees) {
+                List<TimeRecordsDto> timeRecords = timeRecordsService.getTimeRecordsByEmployeeId(
+                        Long.valueOf(employee.getId()),
+                        startDate.atStartOfDay(),
+                        endDate.atTime(23, 59)
+                );
+
+                double totalHours = timeRecordsService.calculateTotalHours(timeRecords);
+                totalCompanyHours += totalHours;
+
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(employee.getName());
+                row.createCell(1).setCellValue(employee.getPosition() != null ? employee.getPosition().getName() : "");
+                row.createCell(2).setCellValue(Double.parseDouble(String.format("%.2f", employee.getSalary())));
+                row.createCell(3).setCellValue(Double.parseDouble(String.format("%.2f", totalHours)));
+            }
+
+            companyRow.createCell(3).setCellValue(totalCompanyHours);
+
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new IOException("Erro ao gerar o relatório de horas por empresa", e);
+        }
+    }
 }

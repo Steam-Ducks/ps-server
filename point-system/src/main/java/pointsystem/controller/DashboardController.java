@@ -43,9 +43,7 @@ public class DashboardController {
             byte[] excelData;
             String filename;
 
-            // Determine the report type and generate the corresponding data
             switch (reportRequestDto.getReportType()) {
-
 
                 case "all-companies":
                     excelData = reportService.generateAllCompaniesReport();
@@ -56,24 +54,29 @@ public class DashboardController {
                     excelData = reportService.generateEmployeeListReport(reportRequestDto.getCompanyId());
                     filename = "relatorio-funcionarios.xlsx";
                     break;
-                /*
+
                 case "time-record":
                     excelData = reportService.generateTimeRecordReport(
                             reportRequestDto.getEmployeeId(),
                             reportRequestDto.getStartDate(),
                             reportRequestDto.getEndDate()
                     );
+                    filename = "relatorio-pontos.xlsx";
                     break;
 
                 case "company-hours":
-                    excelData = reportService.generateCompanyHoursReport(reportRequestDto.getCompanyId());
+                    excelData = reportService.generateCompanyHoursReport(
+                            reportRequestDto.getCompanyId(),
+                            reportRequestDto.getStartDate(),
+                            reportRequestDto.getEndDate()
+                    );
+                    filename = "relatorio-horas-empresa.xlsx";
                     break;
-                 */
+
                 default:
                     throw new IllegalArgumentException("Invalid report type: " + reportRequestDto.getReportType());
             }
 
-            // Set headers for file download
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=" + filename);
             headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
