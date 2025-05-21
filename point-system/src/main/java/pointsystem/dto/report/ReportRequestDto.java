@@ -14,7 +14,9 @@ import java.time.LocalDate;
 public class ReportRequestDto {
     private String reportType;
     private Integer companyId;
+    private String companyName;
     private Integer employeeId;
+    private String employeeName;
     private LocalDate startDate;
     private LocalDate endDate;
 }

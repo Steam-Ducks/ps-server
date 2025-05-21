@@ -1,15 +1,12 @@
 package pointsystem.service;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import pointsystem.dto.employee.EmployeeDto;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
 import pointsystem.entity.Company;
 import pointsystem.repository.CompanyRepository;
-import pointsystem.repository.EmployeeRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,6 +19,7 @@ public class ReportService {
     private final CompanyRepository companyRepository;
     private final EmployeeService employeeService;
     private final TimeRecordsService timeRecordsService;
+
 
     public ReportService(CompanyRepository companyRepository, EmployeeService employeeService, TimeRecordsService timeRecordsService) {
         this.companyRepository = companyRepository;
@@ -36,7 +34,20 @@ public class ReportService {
             Sheet sheet = workbook.createSheet("Empresas");
             List<Company> companies = companyRepository.findAll();
 
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+
             Row header = sheet.createRow(0);
+            String[] headers = {"Nome", "CNPJ", "Contato"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
             header.createCell(0).setCellValue("Nome");
             header.createCell(1).setCellValue("CNPJ");
             header.createCell(2).setCellValue("Contato");
@@ -65,14 +76,21 @@ public class ReportService {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Funcionários");
 
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
             List<EmployeeDto> employees = employeeService.getAllEmployeesFromCompany(companyId);
 
             Row header = sheet.createRow(0);
-            header.createCell(0).setCellValue("Nome");
-            header.createCell(1).setCellValue("CPF");
-            header.createCell(2).setCellValue("Data de Inicio");
-            header.createCell(3).setCellValue("Cargo");
-            header.createCell(4).setCellValue("Salário");
+            String[] headers = {"Nome", "CPF", "Data de Início", "Cargo", "Salário (por hora)"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
             int rowIndex = 1;
             for (EmployeeDto employee : employees) {
@@ -108,12 +126,19 @@ public class ReportService {
                     endDate.atTime(23, 59)
             );
 
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
             Row header = sheet.createRow(0);
-            header.createCell(0).setCellValue("Entrada");
-            header.createCell(1).setCellValue("Editado (Entrada)");
-            header.createCell(2).setCellValue("Saída");
-            header.createCell(3).setCellValue("Editado (Saída)");
-            header.createCell(4).setCellValue("Total de Horas");
+            String[] headers = {"Entrada", "Editado (Entrada)", "Saída", "Editado (Saída)", "Total de Horas"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
             int rowIndex = 1;
             for (int i = 0; i < timeRecords.size(); i += 2) {
@@ -159,19 +184,30 @@ public class ReportService {
 
             double totalCompanyHours = 0;
 
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+
             Row companyRow = sheet.createRow(0);
-            companyRow.createCell(0).setCellValue("Nome da Empresa:");
-            companyRow.createCell(1).setCellValue(company.getName());
-            companyRow.createCell(2).setCellValue("Horas Totais:");
+            String[] companyHeaders = {"Nome da Empresa:", company.getName(), "Horas Totais:"};
+            for (int i = 0; i < companyHeaders.length; i++) {
+                Cell cell = companyRow.createCell(i);
+                cell.setCellValue(companyHeaders[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
-            // Add headers
             Row header = sheet.createRow(2);
-            header.createCell(0).setCellValue("Nome Funcionário");
-            header.createCell(1).setCellValue("Cargo");
-            header.createCell(2).setCellValue("Salário");
-            header.createCell(3).setCellValue("Horas Trabalhadas");
+            String[] headers = {"Nome Funcionário", "Cargo", "Salário (por hora)", "Horas Trabalhadas"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
-            // Populate employee data
             int rowIndex = 3;
             for (EmployeeDto employee : employees) {
                 List<TimeRecordsDto> timeRecords = timeRecordsService.getTimeRecordsByEmployeeId(

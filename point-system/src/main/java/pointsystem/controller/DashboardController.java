@@ -52,7 +52,7 @@ public class DashboardController {
 
                 case "employee-list":
                     excelData = reportService.generateEmployeeListReport(reportRequestDto.getCompanyId());
-                    filename = "relatorio-funcionarios.xlsx";
+                    filename = String.format("relatorio-funcionarios-%s.xlsx", reportRequestDto.getCompanyName().replace(" ", "-"));
                     break;
 
                 case "time-record":
@@ -61,7 +61,7 @@ public class DashboardController {
                             reportRequestDto.getStartDate(),
                             reportRequestDto.getEndDate()
                     );
-                    filename = "relatorio-pontos.xlsx";
+                    filename = String.format("relatorio-pontos-%s_%s-%s.xlsx", reportRequestDto.getEmployeeName().replace(" ", "-"), reportRequestDto.getStartDate().toString(), reportRequestDto.getEndDate().toString());
                     break;
 
                 case "company-hours":
@@ -70,7 +70,7 @@ public class DashboardController {
                             reportRequestDto.getStartDate(),
                             reportRequestDto.getEndDate()
                     );
-                    filename = "relatorio-horas-empresa.xlsx";
+                    filename = String.format("relatorio-horas-%s_%s_%s.xlsx", reportRequestDto.getCompanyName().replace(" ", "-"), reportRequestDto.getStartDate().toString(), reportRequestDto.getEndDate().toString());
                     break;
 
                 default:
