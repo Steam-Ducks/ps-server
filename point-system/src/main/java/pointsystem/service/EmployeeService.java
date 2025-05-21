@@ -86,6 +86,19 @@ public class EmployeeService {
                         .toList()
         );
     }
+
+    @Transactional
+    public List<EmployeeDto> getInactivatedEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+
+        return employeeConverter.toDto(
+                employees.stream()
+                        .filter(employee -> !employee.getStatus())
+                        .sorted(Comparator.comparing(Employee::getName))
+                        .toList()
+        );
+    }
+
     @Transactional
     public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
