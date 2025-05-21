@@ -19,4 +19,5 @@ public class ReportRequestDto {
     private String employeeName;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String fileFormat;
 }

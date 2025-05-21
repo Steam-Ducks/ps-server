@@ -1,6 +1,12 @@
 package pointsystem.service;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import pointsystem.dto.employee.EmployeeDto;
@@ -238,5 +244,217 @@ public class ReportService {
         } catch (IOException e) {
             throw new IOException("Erro ao gerar o relatório de horas por empresa", e);
         }
+    }
+
+    public byte[] generateAllCompaniesReportPdf() throws DocumentException {
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16);
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de Empresas", titleFont);
+        title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        document.add(title);
+
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        PdfPTable table = new PdfPTable(3);
+        table.setWidthPercentage(100);
+        table.setWidths(new int[]{4, 4, 4});
+
+        com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12);
+        table.addCell(new PdfPCell(new Phrase("Nome", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("CNPJ", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Contato", headerFont)));
+
+        List<Company> companies = companyRepository.findAll();
+        for (Company company : companies) {
+            table.addCell(company.getName());
+            table.addCell(company.getCnpj());
+            table.addCell(company.getContact());
+        }
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateEmployeeListReportPdf(Integer companyId) throws DocumentException {
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16);
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de Funcionários", titleFont);
+        title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        document.add(title);
+
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        PdfPTable table = new PdfPTable(5);
+        table.setWidthPercentage(100);
+        table.setWidths(new int[]{4, 4, 4, 4, 4});
+
+        com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12);
+        table.addCell(new PdfPCell(new Phrase("Nome", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("CPF", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Data de Início", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Cargo", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Salário (por hora)", headerFont)));
+
+        List<EmployeeDto> employees = employeeService.getAllEmployeesFromCompany(companyId);
+        for (EmployeeDto employee : employees) {
+            table.addCell(employee.getName());
+            table.addCell(employee.getCpf());
+            table.addCell(employee.getStartDate() != null
+                    ? employee.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    : "");
+            table.addCell(employee.getPosition() != null ? employee.getPosition().getName() : "");
+            table.addCell(String.format("%.2f", employee.getSalary()));
+        }
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateTimeRecordReportPdf(Integer employeeId, LocalDate startDate, LocalDate endDate) throws DocumentException {
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16);
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de Registros de Tempo", titleFont);
+        title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        document.add(title);
+
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        PdfPTable table = new PdfPTable(5);
+        table.setWidthPercentage(100);
+        table.setWidths(new int[]{4, 4, 4, 4, 4});
+
+        com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12);
+        table.addCell(new PdfPCell(new Phrase("Entrada", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Editado (Entrada)", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Saída", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Editado (Saída)", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Total de Horas", headerFont)));
+
+        List<TimeRecordsDto> timeRecords = timeRecordsService.getTimeRecordsByEmployeeId(
+                Long.valueOf(employeeId),
+                startDate.atStartOfDay(),
+                endDate.atTime(23, 59)
+        );
+
+        for (int i = 0; i < timeRecords.size(); i += 2) {
+            TimeRecordsDto entry = timeRecords.get(i);
+            table.addCell(entry.getDateTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            table.addCell(entry.getIsEdit() ? "SIM" : "NÃO");
+
+            if (i + 1 < timeRecords.size()) {
+                TimeRecordsDto exit = timeRecords.get(i + 1);
+                table.addCell(exit.getDateTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                table.addCell(exit.getIsEdit() ? "SIM" : "NÃO");
+
+                double totalHours = timeRecordsService.calculateTotalHours(List.of(entry, exit));
+                table.addCell(String.format("%.2f", totalHours));
+            } else {
+                table.addCell("");
+                table.addCell("");
+                table.addCell("");
+            }
+        }
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateCompanyHoursReportPdf(Integer companyId, LocalDate startDate, LocalDate endDate) throws DocumentException {
+        com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, outputStream);
+
+        document.open();
+
+        com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16);
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de Horas por Empresa", titleFont);
+        title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+        document.add(title);
+
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada com o ID: " + companyId));
+        List<EmployeeDto> employees = employeeService.getAllEmployeesFromCompany(companyId);
+
+
+
+        com.itextpdf.text.Font infoFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12);
+        com.itextpdf.text.Paragraph companyInfo = new com.itextpdf.text.Paragraph(
+                String.format("Empresa: %s\nPeríodo: %s a %s",
+                        company.getName(),
+                        startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                        endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                ),
+                infoFont
+        );
+        document.add(companyInfo);
+
+        document.add(com.itextpdf.text.Chunk.NEWLINE);
+
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.setWidths(new int[]{4, 4, 4, 4});
+
+
+        com.itextpdf.text.Font headerFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12);
+        table.addCell(new PdfPCell(new Phrase("Nome Funcionário", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Cargo", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Salário (por hora)", headerFont)));
+        table.addCell(new PdfPCell(new Phrase("Horas Trabalhadas", headerFont)));
+
+        double totalCompanyHours = 0;
+        for (EmployeeDto employee : employees) {
+            List<TimeRecordsDto> timeRecords = timeRecordsService.getTimeRecordsByEmployeeId(
+                    Long.valueOf(employee.getId()),
+                    startDate.atStartOfDay(),
+                    endDate.atTime(23, 59)
+            );
+
+
+
+            double totalHours = timeRecordsService.calculateTotalHours(timeRecords);
+            totalCompanyHours += totalHours;
+
+
+            table.addCell(employee.getName());
+            table.addCell(employee.getPosition() != null ? employee.getPosition().getName() : "");
+            table.addCell(String.format("%.2f", employee.getSalary()));
+            table.addCell(String.format("%.2f", totalHours));
+        }
+
+        com.itextpdf.text.Font totalFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 12);
+        PdfPCell totalCell = new PdfPCell(new Phrase("Total de Horas", totalFont));
+        totalCell.setColspan(3);
+        totalCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+
+        table.addCell(totalCell);
+        table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalCompanyHours), totalFont)));
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
     }
 }
