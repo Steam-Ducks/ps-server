@@ -54,9 +54,6 @@ public class ReportService {
                 cell.setCellValue(headers[i]);
                 cell.setCellStyle(boldStyle);
             }
-            header.createCell(0).setCellValue("Nome");
-            header.createCell(1).setCellValue("CNPJ");
-            header.createCell(2).setCellValue("Contato");
 
             int rowIndex = 1;
             for (Company company : companies) {
@@ -332,7 +329,7 @@ public class ReportService {
         document.open();
 
         com.itextpdf.text.Font titleFont = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16);
-        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de Registros de Tempo", titleFont);
+        com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Relatório de batidas de ponto", titleFont);
         title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
         document.add(title);
 

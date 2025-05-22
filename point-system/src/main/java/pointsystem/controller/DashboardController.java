@@ -64,7 +64,7 @@ public class DashboardController {
                     }
                     break;
 
-                case "time-record":
+                case "employee-timesheet":
                     if ("pdf".equalsIgnoreCase(reportRequestDto.getFileFormat())) {
                         fileData = reportService.generateTimeRecordReportPdf(
                                 reportRequestDto.getEmployeeId(),
