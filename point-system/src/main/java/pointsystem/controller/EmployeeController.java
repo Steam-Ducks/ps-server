@@ -85,6 +85,16 @@ public class EmployeeController {
         }
     }
 
+    @GetMapping("/company/{companyId}")
+    public ResponseEntity<List<EmployeeDto>> getEmployeeByCompanyId(@PathVariable int companyId) {
+        try {
+            List<EmployeeDto> employees = employeeService.getAllEmployeesFromCompany(companyId);
+            return ResponseEntity.ok(employees);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+          
     @GetMapping("/inactivated")
     public ResponseEntity<List<EmployeeDto>> getInactivatedEmployees() {
         try {
@@ -94,6 +104,7 @@ public class EmployeeController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
+
 
     @PutMapping("/{employeeId}")
     public ResponseEntity<?> updateEmployeeById(@PathVariable int employeeId, @RequestBody EmployeeDto employeeDto) {
