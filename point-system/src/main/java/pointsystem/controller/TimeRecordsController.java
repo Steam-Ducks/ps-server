@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.config.JwtUtil;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
+import pointsystem.dto.timeRecordsHistory.TimeRecordsHistoryDto;
+import pointsystem.service.TimeRecordsHistoryService;
 import pointsystem.service.TimeRecordsService;
 
 import java.net.URI;
@@ -21,11 +23,13 @@ import java.util.Map;
 public class TimeRecordsController {
 
     private final TimeRecordsService timeRecordsService;
+    private final TimeRecordsHistoryService timeRecordsHistoryService;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public TimeRecordsController(TimeRecordsService timeRecordsService, JwtUtil jwtUtil) {
+    public TimeRecordsController(TimeRecordsService timeRecordsService, TimeRecordsHistoryService timeRecordsHistoryService, JwtUtil jwtUtil) {
         this.timeRecordsService = timeRecordsService;
+        this.timeRecordsHistoryService = timeRecordsHistoryService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -52,7 +56,12 @@ public class TimeRecordsController {
         );
     }
 
-
+    @GetMapping("/history/{timeRecordsId}")
+    public ResponseEntity<List<TimeRecordsHistoryDto>> getHistoryByTimeRecordsId(@PathVariable int timeRecordsId) {
+        List<TimeRecordsHistoryDto> history = timeRecordsHistoryService
+                .getHistoryByTimeRecordsId(timeRecordsId);
+        return ResponseEntity.ok(history);
+    }
 
     @PostMapping
     public ResponseEntity<TimeRecordsDto> createTimeRecords(@RequestBody TimeRecordsDto timeRecordsDto) {
