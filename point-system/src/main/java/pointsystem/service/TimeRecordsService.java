@@ -1,14 +1,21 @@
 package pointsystem.service;
 
+import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import pointsystem.converter.TimeRecordsConverter;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
 import pointsystem.entity.TimeRecords;
-import pointsystem.repository.CompanyPositionEmployeeRepository;
+import pointsystem.entity.TimeRecordsHistory;
+import pointsystem.entity.UserEntity;
+import pointsystem.repository.TimeRecordsHistoryRepository;
 import pointsystem.repository.TimeRecordsRepository;
+import pointsystem.repository.UserRepository;
+import pointsystem.repository.CompanyPositionEmployeeRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -20,19 +27,25 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TimeRecordsService {
 
     private final TimeRecordsRepository timeRecordsRepository;
     private final TimeRecordsConverter timeRecordsConverter;
     private final EmployeeService employeeService;
     private final CompanyPositionEmployeeRepository companyPositionEmployeeRepository;
+    private final TimeRecordsHistoryRepository timeRecordsHistoryRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public TimeRecordsService(TimeRecordsRepository timeRecordsRepository, TimeRecordsConverter timeRecordsConverter, EmployeeService employeeService, CompanyPositionEmployeeRepository companyPositionEmployeeRepository) {
+    public TimeRecordsService(TimeRecordsRepository timeRecordsRepository, TimeRecordsHistoryRepository timeRecordsHistoryRepository, TimeRecordsConverter timeRecordsConverter, EmployeeService employeeService, CompanyPositionEmployeeRepository companyPositionEmployeeRepository, UserRepository userRepository) {
+
         this.timeRecordsRepository = timeRecordsRepository;
+        this.timeRecordsHistoryRepository = timeRecordsHistoryRepository;
         this.timeRecordsConverter = timeRecordsConverter;
         this.employeeService = employeeService;
         this.companyPositionEmployeeRepository = companyPositionEmployeeRepository;
+        this.userRepository = userRepository;
     }
 
     public Optional<TimeRecordsDto> getTimeRecordsById(Integer timeRecordsId) {
@@ -66,20 +79,32 @@ public class TimeRecordsService {
         return timeRecordsConverter.toDto(savedEntity);
     }
 
-    public void updateTimeRecordsById(Integer timeRecordsId, TimeRecordsDto timeRecordsDto) {
+    @Transactional
+    public void updateTimeRecordsById(Integer timeRecordsId, TimeRecordsDto timeRecordsDto, String email) throws BadRequestException {
         Optional<TimeRecords> timeRecordsEntity = timeRecordsRepository.findById(Long.valueOf(timeRecordsId));
-
         if (timeRecordsEntity.isPresent()) {
             TimeRecords timeRecords = timeRecordsEntity.get();
+
+            TimeRecordsHistory history = new TimeRecordsHistory();
+            history.setTimeRecords(timeRecords);
+            history.setDateTimeBefore(timeRecords.getDateTime());
+            history.setDateTimeAfter(timeRecordsDto.getDateTime());
+
+            UserEntity userEntity = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadRequestException("Usuário não encontrado. Tente novamente."));
+            String username = userEntity.getUsername();
+
+            history.setUsername(username);
+
+            timeRecordsHistoryRepository.save(history);
 
             if (timeRecordsDto.getDateTime() != null) {
                 timeRecords.setDateTime(timeRecordsDto.getDateTime());
             }
-
             timeRecords.setIsEdit(true);
             timeRecords.setUpdatedAt(OffsetDateTime.now());
-
             timeRecordsRepository.save(timeRecords);
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found");
         }
