@@ -1,9 +1,9 @@
 package pointsystem.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -68,10 +68,10 @@ public class TimeRecordsService {
         TimeRecords savedEntity = timeRecordsRepository.save(entity);
         return timeRecordsConverter.toDto(savedEntity);
     }
-    @Transactional
-    public void updateTimeRecordsById(Integer timeRecordsId, TimeRecordsDto timeRecordsDto) {
-        Optional<TimeRecords> timeRecordsEntity = timeRecordsRepository.findById(Long.valueOf(timeRecordsId));
 
+    @Transactional
+    public void updateTimeRecordsById(Integer timeRecordsId, TimeRecordsDto timeRecordsDto, String email) throws BadRequestException {
+        Optional<TimeRecords> timeRecordsEntity = timeRecordsRepository.findById(Long.valueOf(timeRecordsId));
         if (timeRecordsEntity.isPresent()) {
             TimeRecords timeRecords = timeRecordsEntity.get();
 
@@ -80,10 +80,11 @@ public class TimeRecordsService {
             history.setDateTimeBefore(timeRecords.getDateTime());
             history.setDateTimeAfter(timeRecordsDto.getDateTime());
 
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            UserEntity loggedUser = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-            history.setUser(loggedUser);
+            UserEntity userEntity = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadRequestException("Usuário não encontrado. Tente novamente."));
+            String username = userEntity.getUsername();
+
+            history.setUsername(username);
 
             timeRecordsHistoryRepository.save(history);
 

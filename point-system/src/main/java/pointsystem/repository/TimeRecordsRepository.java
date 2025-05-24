@@ -19,5 +19,4 @@ public interface TimeRecordsRepository extends JpaRepository<TimeRecords, Long> 
             @Param("employeeId") Long employeeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
-
 }
