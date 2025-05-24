@@ -34,21 +34,18 @@ public class TimeRecordsService {
     private final TimeRecordsConverter timeRecordsConverter;
     private final EmployeeService employeeService;
     private final CompanyPositionEmployeeRepository companyPositionEmployeeRepository;
-
     private final TimeRecordsHistoryRepository timeRecordsHistoryRepository;
     private final UserRepository userRepository;
 
     @Autowired
-
-    public TimeRecordsService(TimeRecordsRepository timeRecordsRepository, TimeRecordsHistoryRepository timeRecordsHistoryRepository, TimeRecordsConverter timeRecordsConverter, UserRepository userRepository) {
+    public TimeRecordsService(TimeRecordsRepository timeRecordsRepository, TimeRecordsHistoryRepository timeRecordsHistoryRepository, TimeRecordsConverter timeRecordsConverter, EmployeeService employeeService, CompanyPositionEmployeeRepository companyPositionEmployeeRepository, UserRepository userRepository) {
 
         this.timeRecordsRepository = timeRecordsRepository;
         this.timeRecordsHistoryRepository = timeRecordsHistoryRepository;
         this.timeRecordsConverter = timeRecordsConverter;
-        this.userRepository = userRepository;
         this.employeeService = employeeService;
         this.companyPositionEmployeeRepository = companyPositionEmployeeRepository;
-
+        this.userRepository = userRepository;
     }
 
     public Optional<TimeRecordsDto> getTimeRecordsById(Integer timeRecordsId) {
