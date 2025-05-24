@@ -13,6 +13,7 @@ import pointsystem.service.TimeRecordsService;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -50,6 +51,8 @@ public class TimeRecordsController {
                 timeRecordsService.getTimeRecordsByEmployeeId(employeeId, startDate, endDate)
         );
     }
+
+
 
     @PostMapping
     public ResponseEntity<TimeRecordsDto> createTimeRecords(@RequestBody TimeRecordsDto timeRecordsDto) {

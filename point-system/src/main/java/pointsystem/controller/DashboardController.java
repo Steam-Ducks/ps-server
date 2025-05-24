@@ -1,0 +1,119 @@
+package pointsystem.controller;
+
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import pointsystem.dto.report.ReportRequestDto;
+import pointsystem.service.CompanyService;
+import pointsystem.service.ReportService;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/dashboard")
+public class DashboardController {
+    private final CompanyService companyService;
+    private final ReportService reportService;
+
+    public DashboardController(CompanyService companyService, ReportService reportService) {
+        this.companyService = companyService;
+        this.reportService = reportService;
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getCompaniesDashboard(
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) {
+        try {
+            List<Map<String, Object>> dashboardData = companyService.getAllCompanyDashboardData(startDate, endDate);
+            return ResponseEntity.ok(dashboardData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro ao obter os dados do dashboard das empresas."));
+        }
+    }
+
+    @PostMapping("/export")
+    public ResponseEntity<byte[]> exportReport(@RequestBody ReportRequestDto reportRequestDto) {
+        try {
+            byte[] fileData;
+            String filename;
+
+            switch (reportRequestDto.getReportType()) {
+                case "all-companies":
+                    if ("pdf".equalsIgnoreCase(reportRequestDto.getFileFormat())) {
+                        fileData = reportService.generateAllCompaniesReportPdf();
+                        filename = "relatorio-empresas.pdf";
+                    } else {
+                        fileData = reportService.generateAllCompaniesReport();
+                        filename = "relatorio-empresas.xlsx";
+                    }
+                    break;
+
+                case "employee-list":
+                    if ("pdf".equalsIgnoreCase(reportRequestDto.getFileFormat())) {
+                        fileData = reportService.generateEmployeeListReportPdf(reportRequestDto.getCompanyId());
+                        filename = String.format("relatorio-funcionarios-%s.pdf", reportRequestDto.getCompanyName().replace(" ", "-"));
+                    } else {
+                        fileData = reportService.generateEmployeeListReport(reportRequestDto.getCompanyId());
+                        filename = String.format("relatorio-funcionarios-%s.xlsx", reportRequestDto.getCompanyName().replace(" ", "-"));
+                    }
+                    break;
+
+                case "employee-timesheet":
+                    if ("pdf".equalsIgnoreCase(reportRequestDto.getFileFormat())) {
+                        fileData = reportService.generateTimeRecordReportPdf(
+                                reportRequestDto.getEmployeeId(),
+                                reportRequestDto.getStartDate(),
+                                reportRequestDto.getEndDate()
+                        );
+                        filename = String.format("relatorio-pontos-%s_%s-%s.pdf", reportRequestDto.getEmployeeName().replace(" ", "-"), reportRequestDto.getStartDate(), reportRequestDto.getEndDate());
+                    } else {
+                        fileData = reportService.generateTimeRecordReport(
+                                reportRequestDto.getEmployeeId(),
+                                reportRequestDto.getStartDate(),
+                                reportRequestDto.getEndDate()
+                        );
+                        filename = String.format("relatorio-pontos-%s_%s-%s.xlsx", reportRequestDto.getEmployeeName().replace(" ", "-"), reportRequestDto.getStartDate(), reportRequestDto.getEndDate());
+                    }
+                    break;
+
+                case "company-hours":
+                    if ("pdf".equalsIgnoreCase(reportRequestDto.getFileFormat())) {
+                        fileData = reportService.generateCompanyHoursReportPdf(
+                                reportRequestDto.getCompanyId(),
+                                reportRequestDto.getStartDate(),
+                                reportRequestDto.getEndDate()
+                        );
+                        filename = String.format("relatorio-horas-%s_%s_%s.pdf", reportRequestDto.getCompanyName().replace(" ", "-"), reportRequestDto.getStartDate(), reportRequestDto.getEndDate());
+                    } else {
+                        fileData = reportService.generateCompanyHoursReport(
+                                reportRequestDto.getCompanyId(),
+                                reportRequestDto.getStartDate(),
+                                reportRequestDto.getEndDate()
+                        );
+                        filename = String.format("relatorio-horas-%s_%s_%s.xlsx", reportRequestDto.getCompanyName().replace(" ", "-"), reportRequestDto.getStartDate(), reportRequestDto.getEndDate());
+                    }
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Invalid report type: " + reportRequestDto.getReportType());
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=" + filename);
+            headers.add("Content-Type", "application/" + (filename.endsWith(".pdf") ? "pdf" : "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
+            return new ResponseEntity<>(fileData, headers, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+}

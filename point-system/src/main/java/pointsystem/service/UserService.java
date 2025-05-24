@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import pointsystem.converter.UserConverter;
 import pointsystem.dto.user.UserDto;
 import pointsystem.entity.UserEntity;
@@ -44,10 +45,24 @@ public class UserService {
 
     @Transactional
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
+        return userRepository.findByIsActiveTrue()
                 .stream()
                 .map(userConverter::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<UserDto> getInactiveUsers() {
+        return userRepository.findByIsActiveFalse()
+                .stream()
+                .map(userConverter::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserDto getUserById(int userId) {
+        Optional<UserEntity> userEntity = userRepository.findById(userId);
+        return userEntity.map(userConverter::toDto).orElse(null);
     }
 
     @Transactional

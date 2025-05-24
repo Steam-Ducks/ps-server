@@ -34,7 +34,7 @@ public class AuthenticationService {
         UserEntity userEntitySaved = userRepository.save(userEntity);
 
         String token = jwtUtil.generateToken(userEntitySaved.getEmail(), userEntitySaved.getIsAdmin());
-        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin(), userEntity.getUsername());
     }
 
     public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) throws BadRequestException {
@@ -50,7 +50,10 @@ public class AuthenticationService {
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("E-mail e/ou senha incorretos. Tente novamente."));
 
+        if (!userEntity.getIsActive()) {
+            throw new BadRequestException("Usuário desativado.");
+        }
         String token = jwtUtil.generateToken(userEntity.getEmail(), userEntity.getIsAdmin());
-        return new AuthenticationResponseDto(token, userEntity.getIsAdmin());
+        return new AuthenticationResponseDto(token, userEntity.getIsAdmin(), userEntity.getUsername());
     }
 }

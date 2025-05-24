@@ -1,0 +1,15 @@
+# Ignorar arquivos temporários
+*.log
+*.tmp
+
+# Ignorar diretórios
+/node_modules/
+/dist/
+/build/
+/target/
+
+# Ignorar arquivos de configuração locais
+.env
+*.iml
+.idea/
+.vscode/
