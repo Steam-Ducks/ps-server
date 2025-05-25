@@ -6,7 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import pointsystem.config.JwtUtil;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
+import pointsystem.dto.timeRecordsHistory.TimeRecordsHistoryDto;
+import pointsystem.service.TimeRecordsHistoryService;
 import pointsystem.service.TimeRecordsService;
 
 import java.net.URI;
@@ -20,10 +23,14 @@ import java.util.Map;
 public class TimeRecordsController {
 
     private final TimeRecordsService timeRecordsService;
+    private final TimeRecordsHistoryService timeRecordsHistoryService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public TimeRecordsController(TimeRecordsService timeRecordsService) {
+    public TimeRecordsController(TimeRecordsService timeRecordsService, TimeRecordsHistoryService timeRecordsHistoryService, JwtUtil jwtUtil) {
         this.timeRecordsService = timeRecordsService;
+        this.timeRecordsHistoryService = timeRecordsHistoryService;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping("/{timeRecordsId}")
@@ -49,7 +56,12 @@ public class TimeRecordsController {
         );
     }
 
-
+    @GetMapping("/history/{timeRecordsId}")
+    public ResponseEntity<List<TimeRecordsHistoryDto>> getHistoryByTimeRecordsId(@PathVariable int timeRecordsId) {
+        List<TimeRecordsHistoryDto> history = timeRecordsHistoryService
+                .getHistoryByTimeRecordsId(timeRecordsId);
+        return ResponseEntity.ok(history);
+    }
 
     @PostMapping
     public ResponseEntity<TimeRecordsDto> createTimeRecords(@RequestBody TimeRecordsDto timeRecordsDto) {
@@ -65,9 +77,13 @@ public class TimeRecordsController {
     @PutMapping("/{timeRecordsId}")
     public ResponseEntity<Void> updateTimeRecordsById(
             @PathVariable int timeRecordsId,
-            @RequestBody TimeRecordsDto timeRecordsDto) {
+            @RequestBody TimeRecordsDto timeRecordsDto,
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            timeRecordsService.updateTimeRecordsById(timeRecordsId, timeRecordsDto);
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtUtil.extractEmail(token);
+
+            timeRecordsService.updateTimeRecordsById(timeRecordsId, timeRecordsDto, email);
             return ResponseEntity.noContent().build();
         } catch (ResponseStatusException e) {
             throw e;

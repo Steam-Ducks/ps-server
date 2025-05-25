@@ -78,7 +78,7 @@ public class CompanyService {
 
         List<CompletableFuture<Map<String, Object>>> futures = companyIds.stream()
                 .map(companyId -> CompletableFuture.supplyAsync(() -> {
-                    List<Integer> employeesIds = employeeService.getAllEmployeesFromCompany(companyId);
+                    List<Integer> employeesIds = employeeService.getAllEmployeeIdsFromCompany(companyId);
 
                     LocalDateTime firstDay = LocalDate.parse(startDate).atStartOfDay();
 

@@ -36,6 +36,12 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/inactive")
+    public ResponseEntity<List<UserDto>> getInactiveUsers() {
+        List<UserDto> users = userService.getInactiveUsers();
+        return ResponseEntity.ok(users);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
         UserDto user = userService.getUserById(id);

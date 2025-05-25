@@ -58,6 +58,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:8081")); // Allow frontend origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Content-Disposition"));
         configuration.setAllowCredentials(true); // Allow credentials if needed
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

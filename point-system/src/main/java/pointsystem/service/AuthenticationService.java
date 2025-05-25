@@ -50,6 +50,9 @@ public class AuthenticationService {
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("E-mail e/ou senha incorretos. Tente novamente."));
 
+        if (!userEntity.getIsActive()) {
+            throw new BadRequestException("Usuário desativado.");
+        }
         String token = jwtUtil.generateToken(userEntity.getEmail(), userEntity.getIsAdmin());
         return new AuthenticationResponseDto(token, userEntity.getIsAdmin(), userEntity.getUsername());
     }

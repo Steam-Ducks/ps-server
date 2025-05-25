@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import pointsystem.entity.UserEntity;
 import java.util.List;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -12,4 +13,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     Optional<UserEntity> findByEmail(String email);
     List<UserEntity> findByIsActiveTrue();
+    List<UserEntity> findByIsActiveFalse();
 }
