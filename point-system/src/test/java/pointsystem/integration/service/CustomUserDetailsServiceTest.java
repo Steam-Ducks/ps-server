@@ -1,4 +1,4 @@
-package pointsystem.service;
+package pointsystem.integration.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import pointsystem.entity.UserEntity;
 import pointsystem.repository.UserRepository;
+import pointsystem.service.CustomUserDetailsService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
