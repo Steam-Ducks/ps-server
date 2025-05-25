@@ -12,12 +12,10 @@ import pointsystem.repository.CompanyPositionEmployeeRepository;
 import pointsystem.repository.CompanyRepository;
 import pointsystem.repository.EmployeeRepository;
 import pointsystem.repository.PositionRepository;
-import java.util.Date;
+
+import java.util.*;
 import java.time.ZoneId;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmployeeService {
@@ -86,6 +84,52 @@ public class EmployeeService {
                         .toList()
         );
     }
+
+    @Transactional
+    public List<EmployeeDto> getInactivatedEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+
+        return employeeConverter.toDto(
+                employees.stream()
+                        .filter(employee -> !employee.getStatus())
+                        .sorted(Comparator.comparing(Employee::getName))
+                        .toList()
+        );
+    }
+
+    @Transactional
+    public List<EmployeeDto> getAllEmployeesFromCompany(int companyId) {
+        List<Integer> employeeIds = getAllEmployeeIdsFromCompany(companyId);
+
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
+        return employeeConverter.toDto(
+                employees.stream()
+                        .filter(Employee::getStatus)
+                        .sorted(Comparator.comparing(Employee::getName))
+                        .toList()
+        );
+    }
+    @Transactional
+    public List<Integer> getAllEmployeeIdsFromCompany(int companyId) {
+        return companyPositionEmployeeRepository.findByCompanyId(companyId);
+    }
+
+
+    public Map<String, Integer> countEmployeesByMonth(List<Integer> employeeIds, LocalDate firstDay, LocalDate lastDay) {
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
+
+        Map<String, Integer> startDateCount = new HashMap<>();
+        employees.stream()
+                .filter(employee -> employee.getStartDate() != null)
+                .filter(employee -> !employee.getStartDate().isBefore(firstDay) && !employee.getStartDate().isAfter(lastDay))
+                .forEach(employee -> {
+                    String startDate = employee.getStartDate().toString(); // Convert LocalDate to String
+                    startDateCount.put(startDate, startDateCount.getOrDefault(startDate, 0) + 1);
+                });
+
+        return startDateCount;
+    }
+
     @Transactional
     public void updateEmployeeById(int employeeId, EmployeeDto employeeDto) {
         Optional<Employee> employeeEntity = employeeRepository.findById(employeeId);
@@ -158,4 +202,6 @@ public class EmployeeService {
     private boolean isValidCPF(String cpf) {
         return cpf != null && cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}");
     }
+
+
 }

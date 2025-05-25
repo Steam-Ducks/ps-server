@@ -5,7 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pointsystem.dto.company.CompanyDto;
 import pointsystem.service.CompanyService;
+import pointsystem.service.EmployeeService;
+import pointsystem.service.TimeRecordsService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 

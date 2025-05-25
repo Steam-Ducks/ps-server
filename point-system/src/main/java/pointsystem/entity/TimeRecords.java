@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Setter
 @Getter
@@ -35,4 +36,8 @@ public class TimeRecords {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
+
+    @OneToMany(mappedBy = "timeRecords", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimeRecordsHistory> histories;
+
 }
