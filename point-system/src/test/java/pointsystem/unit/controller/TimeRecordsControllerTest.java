@@ -1,5 +1,6 @@
 package pointsystem.unit.controller;
 
+import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -8,8 +9,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
+import pointsystem.config.JwtUtil;
 import pointsystem.controller.TimeRecordsController;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
+import pointsystem.dto.timeRecordsHistory.TimeRecordsHistoryDto;
+import pointsystem.service.TimeRecordsHistoryService;
 import pointsystem.service.TimeRecordsService;
 
 import java.time.LocalDateTime;
@@ -25,6 +29,12 @@ class TimeRecordsControllerTest {
 
     @Mock
     private TimeRecordsService timeRecordsService;
+
+    @Mock
+    private TimeRecordsHistoryService timeRecordsHistoryService;
+
+    @Mock
+    private JwtUtil jwtUtil;
 
     @InjectMocks
     private TimeRecordsController timeRecordsController;
@@ -82,6 +92,18 @@ class TimeRecordsControllerTest {
     }
 
     @Test
+    void getHistoryByTimeRecordsId_ReturnsHistoryList() {
+        TimeRecordsHistoryDto historyDto = new TimeRecordsHistoryDto();
+        when(timeRecordsHistoryService.getHistoryByTimeRecordsId(1)).thenReturn(Collections.singletonList(historyDto));
+
+        ResponseEntity<List<TimeRecordsHistoryDto>> response = timeRecordsController.getHistoryByTimeRecordsId(1);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(historyDto, response.getBody().get(0));
+    }
+
+    @Test
     void createTimeRecords_ReturnsCreatedStatus() {
         TimeRecordsDto dto = new TimeRecordsDto();
         dto.setId(1);
@@ -104,22 +126,29 @@ class TimeRecordsControllerTest {
     }
 
     @Test
-    void updateTimeRecordsById_ReturnsNoContent() {
+    void updateTimeRecordsById_ReturnsNoContent() throws BadRequestException {
         TimeRecordsDto dto = new TimeRecordsDto();
-        doNothing().when(timeRecordsService).updateTimeRecordsById(1, dto);
+        String token = "Bearer valid.jwt.token";
+        String email = "user@example.com";
 
-        ResponseEntity<Void> response = timeRecordsController.updateTimeRecordsById(1, dto);
+        when(jwtUtil.extractEmail("valid.jwt.token")).thenReturn(email);
+        doNothing().when(timeRecordsService).updateTimeRecordsById(1, dto, email);
+
+        ResponseEntity<Void> response = timeRecordsController.updateTimeRecordsById(1, dto, token);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
-    void updateTimeRecordsById_ThrowsInternalError() {
+    void updateTimeRecordsById_ThrowsInternalError() throws BadRequestException {
         TimeRecordsDto dto = new TimeRecordsDto();
-        doThrow(new RuntimeException("Error")).when(timeRecordsService).updateTimeRecordsById(1, dto);
+        String token = "Bearer invalid.token";
+
+        when(jwtUtil.extractEmail("invalid.token")).thenReturn("user@example.com");
+        doThrow(new RuntimeException("Error")).when(timeRecordsService).updateTimeRecordsById(1, dto, "user@example.com");
 
         assertThrows(ResponseStatusException.class, () -> {
-            timeRecordsController.updateTimeRecordsById(1, dto);
+            timeRecordsController.updateTimeRecordsById(1, dto, token);
         });
     }
 

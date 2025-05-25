@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import pointsystem.dto.timeRecords.TimeRecordsDto;
 import pointsystem.entity.Employee;
 import pointsystem.entity.TimeRecords;
+import pointsystem.entity.UserEntity;
 import pointsystem.repository.EmployeeRepository;
 import pointsystem.repository.TimeRecordsRepository;
+import pointsystem.repository.UserRepository;
 import pointsystem.service.TimeRecordsService;
 
 import java.sql.Timestamp;
@@ -32,19 +34,31 @@ public class TimeRecordsServiceTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private TimeRecords savedRecord;
     private Employee savedEmployee;
+    private UserEntity savedUser;
+    private String testEmail = "carlos@email.com";
 
     @BeforeEach
     public void setUp() {
-        // Cria e salva um funcionário real no banco
+        // Cria e salva um usuário
+        UserEntity user = new UserEntity();
+        user.setEmail(testEmail);
+        user.setUsername("CarlosAdmin");
+        user.setPassword("senha123");
+        savedUser = userRepository.save(user);
+
+        // Cria e salva um funcionário
         Employee emp = new Employee();
         emp.setName("Carlos Daniel");
         emp.setCpf("12375678900");
         emp.setStatus(true);
         savedEmployee = employeeRepository.save(emp);
 
-        // Cria e salva um registro de ponto associado ao funcionário
+        // Cria e salva um registro de ponto
         TimeRecords record = new TimeRecords();
         record.setEmployee(savedEmployee);
         record.setDateTime(Timestamp.from(OffsetDateTime.now().minusHours(2).toInstant()));
@@ -70,7 +84,6 @@ public class TimeRecordsServiceTest {
 
     @Test
     public void testCreateTimeRecords() {
-        // Cria outro funcionário para o teste de criação
         Employee employee = new Employee();
         employee.setName("Carlos Daniel");
         employee.setCpf("12345678900");
@@ -89,12 +102,12 @@ public class TimeRecordsServiceTest {
     }
 
     @Test
-    public void testUpdateTimeRecordsById() {
+    public void testUpdateTimeRecordsById() throws Exception {
         OffsetDateTime newTime = OffsetDateTime.now().minusHours(5);
         TimeRecordsDto update = new TimeRecordsDto();
         update.setDateTime(Timestamp.from(newTime.toInstant()));
 
-        timeRecordsService.updateTimeRecordsById(savedRecord.getId().intValue(), update);
+        timeRecordsService.updateTimeRecordsById(savedRecord.getId().intValue(), update, testEmail);
 
         TimeRecords updated = timeRecordsRepository.findById(savedRecord.getId()).orElseThrow();
         assertEquals(newTime.toLocalDateTime().withNano(0), updated.getDateTime().toLocalDateTime().withNano(0));

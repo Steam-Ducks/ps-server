@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pointsystem.controller.DashboardController;
 import pointsystem.service.CompanyService;
+import pointsystem.service.ReportService;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -15,12 +17,14 @@ import static org.mockito.Mockito.*;
 class DashboardControllerTest {
 
     private CompanyService companyService;
+    private ReportService reportService;
     private DashboardController dashboardController;
 
     @BeforeEach
     void setUp() {
         companyService = mock(CompanyService.class);
-        dashboardController = new DashboardController(companyService);
+        reportService = mock(ReportService.class); // Novo mock
+        dashboardController = new DashboardController(companyService, reportService); // Ajustado
     }
 
     @Test
