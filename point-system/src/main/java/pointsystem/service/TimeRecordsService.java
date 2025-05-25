@@ -177,11 +177,23 @@ public class TimeRecordsService {
         return new BigDecimal(totalHours * salary).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
+
+    @Transactional
     public void deleteTimeRecordsById(Integer timeRecordsId) {
-        if (timeRecordsRepository.existsById(Long.valueOf(timeRecordsId))) {
-            timeRecordsRepository.deleteById(Long.valueOf(timeRecordsId));
+        Long id = Long.valueOf(timeRecordsId);
+
+        if (timeRecordsRepository.existsById(id)) {
+            TimeRecords timeRecords = timeRecordsRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found"));
+
+            // Deleta todos os históricos relacionados a esse TimeRecord
+            timeRecordsHistoryRepository.deleteAllByTimeRecords(timeRecords);
+
+            // Depois de deletar os históricos, remove o registro principal
+            timeRecordsRepository.deleteById(id);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time Records not found");
         }
     }
+
 }
